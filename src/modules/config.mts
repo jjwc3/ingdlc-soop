@@ -8,7 +8,7 @@
 // }
 
 const defaultConfig = {
-    twitch: {
+    soop: {
         boxer: {
             enabled: 1,
         },
@@ -46,34 +46,6 @@ const defaultConfig = {
             enabled: 0
         }
     },
-    cafe: {
-        molcom: {
-            enabled: 0,
-        },
-        twitchalert: {
-            enabled: 1,
-        },
-        alert: {
-            articleId: 1,
-            commId: 1,
-            enabled: 0,
-            volume: 50,
-            image: "icon",
-            title: "INGDLC",
-            body: "방장 알림",
-            latest: 0,
-        },
-        read: {
-            enabled: 1,
-            read: {}
-        },
-        exceptList: {
-            list: ""
-        },
-        audioComp: {
-            enabled: 1
-        }
-    }
 }
 
 /**

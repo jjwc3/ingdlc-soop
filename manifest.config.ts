@@ -31,6 +31,7 @@ export default defineManifest({
   permissions: [
     'sidePanel',
     'contentSettings',
+    'storage'
   ],
   side_panel: {
     default_path: 'src/sidepanel/index.html',
