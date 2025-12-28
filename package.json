@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "papaparse": "^5.5.3",
     "svelte": "^5.36.12",
     "tailwindcss": "^4.1.18"
   },

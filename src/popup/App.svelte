@@ -2,19 +2,83 @@
   import MultiSwitch from '@/components/MultiSwitch.svelte';
   import {configStore, loadConfig} from '@/modules/configStore';
   import {onMount} from 'svelte';
+  import Papa from 'papaparse';
 
-  onMount(loadConfig);
+  function findAll(arr: Array, value: any) {
+    const indices = [];
+    arr.forEach((element, index) => {
+      if (element === value) {
+        indices.push(index);
+      }
+    });
+    return indices;
+  }
+
+  let schedule = $state(["로딩중", "로딩중"]);
+
+  const fetchSchedule = async () => {
+    schedule = ["로딩중", "로딩중"];
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = d.getMonth() + 1;
+    const dd = d.getDate();
+    const date = [yyyy, mm, dd];
+
+
+    const url = "https://docs.google.com/spreadsheets/d/1n-ERReiHweDiCJcXTMkWRBUellktnBYQDbFmouExnas/export?format=csv";
+
+    let csv = [];
+
+    const text = await (await fetch(url)).text();
+    csv = Papa.parse(text, { skipEmptyLines: true }).data;
+
+    if (date[0] !== Number(csv[0][3]) || date[1] !== Number(csv[0][13])) {
+      schedule = ["오류", "오류"]; // noMatch
+    }
+
+    const rowDateIndex = [2, 5, 8, 11, 14, 17];
+    const columnDayIndex = [3, 8, 13, 18, 23, 28, 33];
+
+    let dateArr = [];
+    let textArr = [];
+
+    rowDateIndex.forEach((dateIndex) => {
+      columnDayIndex.forEach((dayIndex) => {
+        dateArr.push(csv[dateIndex][dayIndex].trim());
+        textArr.push(csv[dateIndex+1][dayIndex].trim());
+      })
+    })
+    const oneIndex = findAll(dateArr, "1");
+    dateArr = dateArr.slice(oneIndex[0], oneIndex[1]);
+    textArr = textArr.slice(oneIndex[0], oneIndex[1]);
+
+    if (Number(dateArr[date[2]-1]) !== date[2]){
+      schedule = ["오류", "오류"]; // err
+    }
+    else {
+      let temp = [textArr[date[2]-1], textArr[date[2]]];
+      temp.forEach((value, index) => {
+        if (value === "") temp[index] = "정규방송";
+      })
+      schedule = temp;
+    }
+  }
+
+  onMount(async () => {
+    await loadConfig();
+    await fetchSchedule();
+  })
 </script>
 
 
 <div style="min-width:400px;" class="text-slate-900 bg-slate-50 px-2 py-4">
   <header>
-    <h1 class="text-2xl font-bold text-center">
+    <h1 class="text-2xl font-bold text-center mt-3 mb-1">
       INGDLC for SOOP
     </h1>
 
     <div class="text-center text-xs text-slate-500">
-      Ver.<span id="version-current">0.0</span>
+      Ver.<span id="version-current">{chrome.runtime.getManifest().version}</span>
     </div>
 
     <div class="absolute left-2 top-2">
@@ -26,17 +90,16 @@
     </div>
 
   </header>
-
-  <footer class="flex justify-around my-4 font-bold text-lg">
+  <footer class="flex justify-around mt-4 font-bold text-sm">
     <div class="flex">
       <p>오늘: &nbsp;</p>
-      <p id="schedule-today"></p>
+      <p id="schedule-today" class="{schedule[0].includes('오류') || schedule[0].includes('휴방') ? 'text-red-500' : 'text-black'}">{schedule[0]}</p>
     </div>
     <div class="flex">
       <p>내일: &nbsp;</p>
-      <p id="schedule-tomorrow"></p>
+      <p id="schedule-tomorrow" class="{schedule[1].includes('오류') || schedule[1].includes('휴방') ? 'text-red-500' : 'text-black'}">{schedule[1]}</p>
     </div>
-    <button id="schedule-reload" class="font-medium text-sm">새로고침</button>
+    <button id="schedule-reload" class="font-medium text-sm hover:cursor-pointer" onclick={fetchSchedule}>새로고침</button>
   </footer>
 
   <div id="wrap" class="flex flex-col">
