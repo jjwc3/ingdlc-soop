@@ -1,6 +1,7 @@
 <script lang="ts">
   import MultiSwitch from '@/components/MultiSwitch.svelte';
-  import {configStore, loadConfig} from '@/modules/configStore';
+  import Modal from "@/components/Modal.svelte";
+  import {configStore, loadConfig, resetConfig} from '@/modules/configStore';
   import {onMount} from 'svelte';
   import Papa from 'papaparse';
 
@@ -30,7 +31,7 @@
     let csv = [];
 
     const text = await (await fetch(url)).text();
-    csv = Papa.parse(text, { skipEmptyLines: true }).data;
+    csv = Papa.parse(text, {skipEmptyLines: true}).data;
 
     if (date[0] !== Number(csv[0][3]) || date[1] !== Number(csv[0][13])) {
       schedule = ["오류", "오류"]; // noMatch
@@ -45,22 +46,51 @@
     rowDateIndex.forEach((dateIndex) => {
       columnDayIndex.forEach((dayIndex) => {
         dateArr.push(csv[dateIndex][dayIndex].trim());
-        textArr.push(csv[dateIndex+1][dayIndex].trim());
+        textArr.push(csv[dateIndex + 1][dayIndex].trim());
       })
     })
     const oneIndex = findAll(dateArr, "1");
     dateArr = dateArr.slice(oneIndex[0], oneIndex[1]);
     textArr = textArr.slice(oneIndex[0], oneIndex[1]);
 
-    if (Number(dateArr[date[2]-1]) !== date[2]){
+    if (Number(dateArr[date[2] - 1]) !== date[2]) {
       schedule = ["오류", "오류"]; // err
-    }
-    else {
-      let temp = [textArr[date[2]-1], textArr[date[2]]];
+    } else {
+      let temp = [textArr[date[2] - 1], textArr[date[2]]];
       temp.forEach((value, index) => {
         if (value === "") temp[index] = "정규방송";
       })
       schedule = temp;
+    }
+  }
+
+  let showResetModal = $state(false);
+
+  async function performReset() {
+    try {
+      await resetConfig();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      showResetModal = false;
+    }
+  }
+
+  function openModal(e: Event) {
+    e.stopPropagation();
+    showResetModal = true;
+  }
+
+  const openSide = async () => {
+    try {
+      const windowInfo = await chrome.windows.getCurrent();
+
+      if (windowInfo.id) {
+        await chrome.sidePanel.open({ windowId: windowInfo.id });
+        window.close();
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -78,11 +108,11 @@
     </h1>
 
     <div class="text-center text-xs text-slate-500">
-      Ver.<span id="version-current">{chrome.runtime.getManifest().version}</span>
+      Ver.<span>{chrome.runtime.getManifest().version}</span>
     </div>
 
     <div class="absolute left-2 top-2">
-      <button class="hover:cursor-pointer text-slate-400 text-xs">도배 도우미 열기</button>
+      <button class="hover:cursor-pointer text-slate-400 text-xs" onclick={openSide}>도배 도우미 열기</button>
     </div>
 
     <div class="absolute right-2 top-2">
@@ -91,18 +121,18 @@
 
   </header>
   <footer class="flex justify-around mt-4 font-bold text-sm">
-    <div class="flex">
-      <p>오늘: &nbsp;</p>
-      <p id="schedule-today" class="{schedule[0].includes('오류') || schedule[0].includes('휴방') ? 'text-red-500' : 'text-black'}">{schedule[0]}</p>
+    <div class="flex min-w-0 max-w-2/5">
+      <p class="text-nowrap">오늘: &nbsp;</p>
+      <p class="{schedule[0].includes('오류') || schedule[0].includes('휴방') ? 'text-red-500' : 'text-black'} truncate">{schedule[0]}</p>
     </div>
-    <div class="flex">
-      <p>내일: &nbsp;</p>
-      <p id="schedule-tomorrow" class="{schedule[1].includes('오류') || schedule[1].includes('휴방') ? 'text-red-500' : 'text-black'}">{schedule[1]}</p>
+    <div class="flex min-w-0 max-w-2/5">
+      <p class="text-nowrap">내일: &nbsp;</p>
+      <p class="{schedule[1].includes('오류') || schedule[1].includes('휴방') ? 'text-red-500' : 'text-black'} truncate">{schedule[1]}</p>
     </div>
-    <button id="schedule-reload" class="font-medium text-sm hover:cursor-pointer" onclick={fetchSchedule}>새로고침</button>
+    <button id="schedule-reload" class="font-medium text-sm hover:cursor-pointer text-nowrap" onclick={fetchSchedule}>새로고침</button>
   </footer>
 
-  <div id="wrap" class="flex flex-col">
+  <div class="flex flex-col">
     <div
         class="border border-slate-100 shadow-xl hover:shadow-2xl ease-in-out duration-500 rounded-md bg-white px-3 py-4 m-4 bg-opacity-70 hover:bg-opacity-100 transition-all">
 
@@ -167,4 +197,17 @@
       </div>
     </div>
   </div>
+
+  <footer>
+    <div class="flex justify-center">
+      <button class="hover:cursor-pointer text-slate-400 text-xs" onclick={openModal}>설정 초기화</button>
+    </div>
+  </footer>
 </div>
+
+<Modal
+    bind:show={showResetModal}
+    title="설정 초기화"
+    message="도배 리스트를 포함한 모든 설정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    onConfirm={performReset}
+/>
