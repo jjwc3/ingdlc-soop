@@ -121,11 +121,11 @@
 
   </header>
   <footer class="flex justify-around mt-4 font-bold text-sm">
-    <div class="flex min-w-0 max-w-2/5">
+    <div class="flex min-w-0 max-w-2/7">
       <p class="text-nowrap">오늘: &nbsp;</p>
       <p class="{schedule[0].includes('오류') || schedule[0].includes('휴방') ? 'text-red-500' : 'text-black'} truncate">{schedule[0]}</p>
     </div>
-    <div class="flex min-w-0 max-w-2/5">
+    <div class="flex min-w-0 max-w-2/7">
       <p class="text-nowrap">내일: &nbsp;</p>
       <p class="{schedule[1].includes('오류') || schedule[1].includes('휴방') ? 'text-red-500' : 'text-black'} truncate">{schedule[1]}</p>
     </div>

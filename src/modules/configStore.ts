@@ -3,7 +3,8 @@ import {writable} from 'svelte/store';
 export interface AppConfig {
   mujisung: {
     enabled: 0 | 1 | 2,
-    custom: string,
+    list: string[][],
+    custom: string[],
     exception: string[]
   },
   capture: {
@@ -17,7 +18,7 @@ export interface AppConfig {
     os: 0 | 1
   },
   autoUp: {
-    custom: string
+    custom: string[]
   },
   reload: {
     enabled: 0 | 1
@@ -26,7 +27,7 @@ export interface AppConfig {
     enabled: 0 | 1 | 2
   },
   blockUser: {
-    list: string
+    list: string[]
   },
   blockGrade: {
     enabled: 0 | 1
@@ -36,7 +37,8 @@ export interface AppConfig {
 const initialConfig: AppConfig = {
   mujisung: {
     enabled: 2,
-    custom: "⬛⬛⬛도배 리스트\n⬛⬛⬛리스트 추가는 확장 프로그램에서",
+    list: [],
+    custom: ["⬛⬛⬛도배 리스트", "⬛⬛⬛리스트 추가는 확장 프로그램에서"],
     exception: ["규칙", "채팅금지", "가능입니다", "푸숑"]
   },
   capture: {
@@ -50,7 +52,7 @@ const initialConfig: AppConfig = {
     os: 0,
   },
   autoUp: {
-    custom: "nanajam\n"
+    custom: ["nanajam"]
   },
   reload: {
     enabled: 1
@@ -59,7 +61,7 @@ const initialConfig: AppConfig = {
     enabled: 2
   },
   blockUser: {
-    list: ""
+    list: [""]
   },
   blockGrade: {
     enabled: 0

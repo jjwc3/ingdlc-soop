@@ -32,7 +32,7 @@
   </div>
 
   <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-inner">
-    <ul class="max-h-32 overflow-y-auto divide-y divide-slate-50 custom-scrollbar">
+    <ul class="h-32 overflow-y-auto divide-y divide-slate-50 custom-scrollbar">
       {#each configList as el}
         <li class="group flex items-center justify-between px-3 py-1.5 hover:bg-slate-50 transition-colors">
           <span class="text-[11px] font-bold text-slate-600 truncate mr-2">{el}</span>
