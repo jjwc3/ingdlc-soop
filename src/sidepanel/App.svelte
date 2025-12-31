@@ -52,10 +52,13 @@
 
   let mujisungFiltered = $derived.by(() => {
     const list = $configStore.mujisung.list;
+    const custom = $configStore.mujisung.custom;
+    const mappedCustom = custom.map(i => ["커스텀", "커스텀", i]);
+    const final = [...list, ...mappedCustom];
     let query = mujisungQuery.trim().toLowerCase();
-    if (!query) return list;
+    if (!query) return final;
 
-    return list.filter(item => {
+    return final.filter(item => {
       const joined = item.join(' ').toLowerCase();
       return joined.includes(query) || getChoseong(joined).includes(query);
     })
@@ -93,7 +96,7 @@
       Ver.<span>{chrome.runtime.getManifest().version}</span>
     </div>
     <div class="absolute right-2 top-2">
-      <a href="index.html" target="_blank" class="hover:cursor-pointer text-slate-400 text-xs">새 창에서 열기</a>
+      <a href="index.html" target="_blank" class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs">새 창에서 열기</a>
     </div>
   </header>
   <div class="flex flex-col">
@@ -146,7 +149,7 @@
                     <span class="w-1/5 truncate">{item[0]}</span>
                     <span class="w-px h-4 mx-1.5 bg-slate-300"></span>
                     <span class="w-4/5 truncate">{item[2]}</span>
-                  {:else if item[0] === "기타"}
+                  {:else if item[0] === "기타" || item[0] === "커스텀"}
                     <span class="w-1/10 truncate">{item[0]}</span>
                     <span class="w-px h-4 mx-1.5 bg-slate-300"></span>
                     <span class="w-9/10 truncate">{item[2]}</span>
@@ -169,20 +172,6 @@
           placeHolder="ex) 도배💖만들어줘💥"
           bind:configList={$configStore.mujisung.custom}
       />
-
-      <div class="mb-4 last:mb-0 relative">
-        <div class="flex flex-row items-center mb-1.5">
-          <span class="flex items-center text-sm font-semibold"># 커스텀 도배 리스트</span>
-        </div>
-
-        <div
-            class="relative flex items-center bg-slate-200 rounded-lg p-1 w-full overflow-hidden focus-within:ring-2 focus-within:ring-blue-400 transition-all">
-          <input type="text" placeholder="ex) 도배💖만들어줘💥"
-                 class="w-full bg-transparent border-none focus:ring-0 text-[11px] font-bold py-1.5 px-2 text-slate-700"
-          />
-        </div>
-
-      </div>
 
       <InputAndAdd
           title="도배 제외 리스트"
@@ -208,7 +197,7 @@
 
   <footer>
     <div class="flex justify-center">
-      <button class="hover:cursor-pointer text-slate-400 text-xs" onclick={openModal}>설정 초기화</button>
+      <button class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs" onclick={openModal}>설정 초기화</button>
     </div>
   </footer>
 </div>

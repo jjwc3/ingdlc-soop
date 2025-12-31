@@ -1,8 +1,23 @@
 <script lang="ts">
-  export let title: string = "";
-  export let subtitle: string = "";
-  export let placeHolder: string = "";
-  export let configList: [];
+  let {
+    title = "",
+    subtitle = "",
+    placeHolder = "",
+    configList = $bindable([] as string[])
+  } = $props()
+
+  let input = $state("");
+
+  let addInput = () => {
+    if (input) {
+      configList = [...configList, input.trim()];
+      input = "";
+    }
+  }
+
+  let removeItem = (index: number) => {
+    configList = configList.filter((_, i) => i !== index);
+  }
 </script>
 
 <div class="mb-4 last:mb-0 relative">
@@ -17,13 +32,21 @@
     <div
         class="relative flex-1 flex items-center bg-slate-200 rounded-lg p-1 overflow-hidden focus-within:ring-2 focus-within:ring-blue-400 transition-all">
       <input type="text" placeholder="{placeHolder}"
-             class="w-full bg-transparent border-none focus:ring-0 text-[11px] font-bold py-1.5 px-2 text-slate-700 placeholder:text-slate-400"
+             class="w-full bg-transparent border-none focus:ring-0 text-xs font-bold py-1.5 px-2 text-slate-700 placeholder:text-slate-400"
+             bind:value={input}
+             onkeydown={(e) => {
+               if (e.key === "Enter") {
+                 e.preventDefault();
+                 addInput();
+               }
+             }}
       />
     </div>
 
     <button type="button"
             class="flex items-center justify-center bg-slate-200 hover:bg-blue-500 hover:text-white text-slate-500 rounded-lg px-3 transition-colors group"
             aria-label="추가"
+            onclick={addInput}
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
@@ -33,19 +56,21 @@
 
   <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-inner">
     <ul class="h-32 overflow-y-auto divide-y divide-slate-50 custom-scrollbar">
-      {#each configList as el}
+      {#each configList as el, i}
         <li class="group flex items-center justify-between px-3 py-1.5 hover:bg-slate-50 transition-colors">
-          <span class="text-[11px] font-bold text-slate-600 truncate mr-2">{el}</span>
+          <span class="text-xs font-bold text-slate-600 truncate mr-2">{el}</span>
 
           <button
               type="button"
-              class="opacity-0 group-hover:opacity-100 flex items-center justify-center w-6 h-6 -mr-1 text-slate-300 hover:text-red-500 transition-all rounded-md"
+              class="flex items-center justify-center w-6 h-6 -mr-1 text-slate-300 hover:text-red-500 transition-all rounded-md"
               aria-label="삭제"
+              onclick={() => {
+                removeItem(i)
+              }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 block" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l1.293 1.293a1 1 0 01-1.414 1.414L10 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clip-rule="evenodd"/>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 block" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="15" y1="5" x2="5" y2="15"></line>
+              <line x1="5" y1="5" x2="15" y2="15"></line>
             </svg>
           </button>
         </li>

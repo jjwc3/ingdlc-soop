@@ -38,8 +38,8 @@ const initialConfig: AppConfig = {
   mujisung: {
     enabled: 2,
     list: [],
-    custom: ["⬛⬛⬛도배 리스트", "⬛⬛⬛리스트 추가는 확장 프로그램에서"],
-    exception: ["규칙", "채팅금지", "가능입니다", "푸숑"]
+    custom: [],
+    exception: ["규칙", "채팅금지"]
   },
   capture: {
     enabled: 2,

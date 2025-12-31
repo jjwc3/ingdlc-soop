@@ -1,13 +1,16 @@
 <script lang="ts">
-  export let title: string = "";
-  export let subtitle: string = "";
-  export let options: { label: string; value: any }[] = [];
-  export let value: any;
+  let {
+    title = "",
+    subtitle = "",
+    options = [],
+    value = $bindable()
+  } = $props();
 
-  $: currentIndex = options.findIndex(opt => opt.value === value);
-  $: safeIndex = currentIndex === -1 ? 0 : currentIndex;
+  let currentIndex = $derived(options.findIndex(opt => opt.value === value));
 
-  $: sliderWidth = 100 / options.length;
+  let safeIndex = $derived(currentIndex === -1 ? 0 : currentIndex);
+
+  let sliderWidth = $derived(options.length > 0 ? 100 / options.length : 0);
 </script>
 
 <div class="mb-4 last:mb-0">
@@ -30,7 +33,7 @@
           type="button"
           class="relative z-10 flex-1 py-1.5 text-[11px] font-bold transition-colors duration-200
                {value === opt.value ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'}"
-          on:click={() => (value = opt.value)}
+          onclick={() => (value = opt.value)}
       >
         {opt.label}
       </button>

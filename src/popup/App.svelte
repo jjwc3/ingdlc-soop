@@ -25,6 +25,10 @@
     const dd = d.getDate();
     const date = [yyyy, mm, dd];
 
+    const n = new Date(d);
+    n.setDate(d.getDate() + 1);
+    const nextDate = n.getDate();
+
 
     const url = "https://docs.google.com/spreadsheets/d/1n-ERReiHweDiCJcXTMkWRBUellktnBYQDbFmouExnas/export?format=csv";
 
@@ -35,6 +39,7 @@
 
     if (date[0] !== Number(csv[0][3]) || date[1] !== Number(csv[0][13])) {
       schedule = ["오류", "오류"]; // noMatch
+      return;
     }
 
     const rowDateIndex = [2, 5, 8, 11, 14, 17];
@@ -49,18 +54,24 @@
         textArr.push(csv[dateIndex + 1][dayIndex].trim());
       })
     })
+
     const oneIndex = findAll(dateArr, "1");
     dateArr = dateArr.slice(oneIndex[0], oneIndex[1]);
     textArr = textArr.slice(oneIndex[0], oneIndex[1]);
 
     if (Number(dateArr[date[2] - 1]) !== date[2]) {
       schedule = ["오류", "오류"]; // err
+      return;
     } else {
       let temp = [textArr[date[2] - 1], textArr[date[2]]];
       temp.forEach((value, index) => {
         if (value === "") temp[index] = "정규방송";
       })
-      schedule = temp;
+      if (date[2]+1 === nextDate) {
+        schedule = temp;
+      } else {
+        schedule = [temp[0], "직접 확인"];
+      }
     }
   }
 
@@ -101,7 +112,7 @@
 </script>
 
 
-<div style="min-width:400px;" class="text-slate-900 bg-slate-50 px-2 py-4">
+<div style="min-width:400px; max-width:400px" class=" text-slate-900 bg-slate-50 px-2 py-4">
   <header>
     <h1 class="text-2xl font-bold text-center mt-3 mb-1">
       INGDLC for SOOP
@@ -112,26 +123,35 @@
     </div>
 
     <div class="absolute left-2 top-2">
-      <button class="hover:cursor-pointer text-slate-400 text-xs" onclick={openSide}>도배 도우미 열기</button>
+      <button class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs" onclick={openSide}>도배 도우미 열기</button>
     </div>
 
     <div class="absolute right-2 top-2">
-      <a href="index.html" target="_blank" class="hover:cursor-pointer text-slate-400 text-xs">새 창에서 열기</a>
+      <a href="index.html" target="_blank" class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs">새 창에서 열기</a>
     </div>
 
   </header>
-  <footer class="flex justify-around mt-4 font-bold text-sm">
-    <div class="flex min-w-0 max-w-2/7">
+  <hr class="mx-7 my-3 border-slate-300">
+  <footer class="flex items-center justify-between w-full px-7 gap-4 font-bold text-sm">
+    <div class="flex flex-1 min-w-0" title={schedule[0]}>
       <p class="text-nowrap">오늘: &nbsp;</p>
       <p class="{schedule[0].includes('오류') || schedule[0].includes('휴방') ? 'text-red-500' : 'text-black'} truncate">{schedule[0]}</p>
     </div>
-    <div class="flex min-w-0 max-w-2/7">
+    <div class="flex flex-1 min-w-0" title={schedule[1]}>
       <p class="text-nowrap">내일: &nbsp;</p>
-      <p class="{schedule[1].includes('오류') || schedule[1].includes('휴방') ? 'text-red-500' : 'text-black'} truncate">{schedule[1]}</p>
+      <p class="{schedule[1].includes('오류') || schedule[1].includes('휴방') || schedule[1].includes('직접 확인') ? 'text-red-500' : 'text-black'} truncate">{schedule[1]}</p>
     </div>
-    <button id="schedule-reload" class="font-medium text-sm hover:cursor-pointer text-nowrap" onclick={fetchSchedule}>새로고침</button>
+    <button id="schedule-reload" class="shrink-0 font-medium text-sm hover:cursor-pointer text-nowrap hover:font-bold" onclick={fetchSchedule}>새로고침</button>
   </footer>
+  <hr class="mx-7 my-3 border-slate-300">
 
+  <footer class="flex justify-between mx-7">
+    <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://ch.sooplive.co.kr/nanajam" target="_blank">💜SOOP</a>
+    <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://cafe.naver.com/ingsfriends" target="_blank">💕잉친쓰</a>
+    <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://docs.google.com/spreadsheets/d/1n-ERReiHweDiCJcXTMkWRBUellktnBYQDbFmouExnas" target="_blank">💚방송일정</a>
+    <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://www.youtube.com/channel/UCW945UjEs6Jm3rVNvPEALdg" target="_blank">❤️유튜브</a>
+    <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://www.instagram.com/friendshiping94/" target="_blank">💗인스타그램</a>
+  </footer>
   <div class="flex flex-col">
     <div
         class="border border-slate-100 shadow-xl hover:shadow-2xl ease-in-out duration-500 rounded-md bg-white px-3 py-4 m-4 bg-opacity-70 hover:bg-opacity-100 transition-all">
@@ -200,7 +220,7 @@
 
   <footer>
     <div class="flex justify-center">
-      <button class="hover:cursor-pointer text-slate-400 text-xs" onclick={openModal}>설정 초기화</button>
+      <button class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs" onclick={openModal}>설정 초기화</button>
     </div>
   </footer>
 </div>
