@@ -94,6 +94,18 @@ export const loadConfig = async () => {
   }
 };
 
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes.config) {
+    const nextConfig = changes.config.newValue as AppConfig;
+    configStore.update(current => {
+      if (JSON.stringify(current) !== JSON.stringify(nextConfig)) {
+        return nextConfig;
+      }
+      return current;
+    });
+  }
+});
+
 export const resetConfig = async () => {
   try {
     configStore.set({...initialConfig});

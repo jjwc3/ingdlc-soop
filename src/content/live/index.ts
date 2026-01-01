@@ -1,13 +1,44 @@
-import { mount } from 'svelte'
-import App from './App.svelte'
+import { mount } from "svelte";
+import App from "./App.svelte";
 
-function mountApp() {
-  const container = document.createElement('div')
-  container.id = 'ingdlc-soop-live'
-  document.body.appendChild(container)
-  mount(App, {
-    target: container,
-  })
+async function init() {
+  const targetAnchor = await waitForElement(".game_point");
+
+  if (targetAnchor && !document.getElementById("INGDLC-MOUNT-ROOT")) {
+    const container = document.createElement("div");
+    container.id = "INGDLC-MOUNT-ROOT";
+    container.style.display = "contents"; // 기존 레이아웃 유지
+
+    targetAnchor.after(container);
+
+    mount(App, {
+      target: container,
+    });
+
+    console.log("[Extension] Svelte 5 App Mounted");
+  }
 }
 
-mountApp()
+function waitForElement(selector: string): Promise<Element | null> {
+  return new Promise((resolve) => {
+    const el = document.querySelector(selector);
+    if (el) return resolve(el);
+
+    const observer = new MutationObserver(() => {
+      const target = document.querySelector(selector);
+      if (target) {
+        observer.disconnect();
+        resolve(target);
+      }
+    });
+
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    setTimeout(() => {
+      observer.disconnect();
+      resolve(null);
+    }, 10000);
+  });
+}
+
+await init();

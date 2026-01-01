@@ -31,7 +31,14 @@ export default defineManifest({
   permissions: [
     'sidePanel',
     'contentSettings',
-    'storage'
+    'storage',
+    'downloads'
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/assets/*.png", "src/assets/*.svg"],
+      "matches": ["<all_urls>"]
+    }
   ],
   side_panel: {
     default_path: 'src/sidepanel/index.html',

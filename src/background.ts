@@ -4,4 +4,11 @@ chrome.runtime.onMessage.addListener(async (message, sender) => {
       await chrome.sidePanel.open({ tabId: sender.tab.id });
     }
   }
+  if (message.action === 'DOWNLOAD_FILE') {
+    await chrome.downloads.download({
+      url: message.payload.url,
+      filename: message.payload.filename,
+      saveAs: false
+    });
+  }
 });
