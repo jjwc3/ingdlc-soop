@@ -1,5 +1,3 @@
-// 자동UP(+자정), 타임라인 복사
-
 <script lang="ts">
   import {onMount} from "svelte";
   import {configStore, loadConfig} from "@/modules/configStore";
@@ -13,14 +11,14 @@
   let compressor: DynamicsCompressorNode | null = null;
   let acActive = $state(false);
 
-  let mujisungFunc = async () => {
+  async function mujisungFunc() {
     await chrome.runtime.sendMessage({action: "INGDLC_SIDE"});
   }
 
   async function captureFunc() {
     const video = document.querySelector('video');
     if (!video) {
-      console.error("비디오 요소를 찾을 수 없습니다.");
+      console.error("No Video");
       return;
     }
 
@@ -54,7 +52,7 @@
     }
   }
 
-  let audioFunc = async () => {
+  function audioFunc() {
     const video = document.querySelector('video');
     if (!video) return;
 
@@ -72,22 +70,34 @@
       source.connect(audioCtx.destination);
     }
 
+    const toast = document.getElementById("toastMessage");
+
     if (!acActive) {
       source.disconnect(audioCtx.destination);
       source.connect(compressor);
       compressor.connect(audioCtx.destination);
       acActive = true;
       console.log("Compressor ON");
+      toast.querySelector(".success").querySelector('p').innerHTML = "볼륨 평준화가 켜졌습니다.";
+      toast.style.display = "flex";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 2000);
     } else {
       source.disconnect(compressor);
       compressor.disconnect(audioCtx.destination);
       source.connect(audioCtx.destination);
       acActive = false;
       console.log("Compressor OFF");
+      toast.querySelector(".success").querySelector('p').innerHTML = "볼륨 평준화가 꺼졌습니다.";
+      toast.style.display = "flex";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 2000);
     }
-  };
+  }
 
-  const checkLaw = () => {
+  function checkLaw() {
     if ($configStore.checkLawAlert.enabled) {
       return confirm("설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.");
     } else {
@@ -99,7 +109,46 @@
     if (!e.altKey) return;
     if (['m', 'µ'].includes(e.key) && [1, 2].includes($configStore.mujisung.enabled)) await mujisungFunc();
     if (['c', 'ç'].includes(e.key) && [1, 2].includes($configStore.capture.enabled)) await captureFunc();
-    if (['a', 'å'].includes(e.key) && [1, 2].includes($configStore.audioComp.enabled)) await audioFunc();
+    if (['a', 'å'].includes(e.key) && [1, 2].includes($configStore.audioComp.enabled)) audioFunc();
+  }
+
+  function likeClick() {
+    let streamerId = document.querySelector("#streamerNick").getAttribute("data-bj_id");
+
+    if ($configStore.autoUp.custom.includes(streamerId) && !document.querySelector(".btn-login")) {
+      const date = new Date();
+      const time = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+
+      let interval = setInterval(() => {
+        let button = document.querySelector("#like") as HTMLButtonElement;
+        if (document.querySelector(".depend_item").style.display !== "none" && !button.classList.contains("on")) {
+          clearInterval(interval);
+          button.click();
+        }
+      }, 1000)
+      setTimeout(interval(), (86400-time)*1000+2000);
+    }
+  }
+
+  function timelineCopy() {
+    let interval = setInterval(() => {
+      let timelineList = document.querySelectorAll("#time");
+      if (timelineList.length !== 0) {
+        clearInterval(interval);
+        timelineList.forEach((e) => {
+          e.parentElement.addEventListener("click", () => {
+            navigator.clipboard.writeText(e.innerHTML);
+            const toast = document.getElementById("toastMessage");
+            toast.querySelector(".success").querySelector('p').innerHTML = "복사되었습니다.";
+            toast.style.display = "flex";
+            setTimeout(() => {
+              toast.style.display = "none";
+            }, 2000);
+          })
+          e.parentElement.style.cursor = "pointer";
+        })
+      }
+    }, 1000);
   }
 
   onMount(async () => {
@@ -109,6 +158,9 @@
 
     events.forEach(evt => document.addEventListener(evt, preventStop, true));
     window.addEventListener('keydown', handleKeydown);
+
+    likeClick();
+    timelineCopy();
 
     return () => {
       events.forEach(evt => document.removeEventListener(evt, preventStop, true));

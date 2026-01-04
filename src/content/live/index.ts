@@ -7,15 +7,13 @@ async function init() {
   if (targetAnchor && !document.getElementById("INGDLC-MOUNT-ROOT")) {
     const container = document.createElement("div");
     container.id = "INGDLC-MOUNT-ROOT";
-    container.style.display = "contents"; // 기존 레이아웃 유지
+    container.style.display = "contents";
 
     targetAnchor.after(container);
 
     mount(App, {
       target: container,
     });
-
-    console.log("[Extension] Svelte 5 App Mounted");
   }
 }
 
