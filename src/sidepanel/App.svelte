@@ -41,6 +41,7 @@
         })
       })
     }
+
     configStore.update(current => ({
       ...current,
       mujisung: {
@@ -69,7 +70,6 @@
   async function handleSelect(text: string) {
     try {
       await navigator.clipboard.writeText(text);
-      console.log("Copied");
       searchFocused = false;
       if (inputRef) {
         inputRef.blur();
@@ -86,7 +86,7 @@
 </script>
 
 
-<div style="min-width:400px;" class="text-slate-900 h-screen bg-slate-50 px-2 py-4">
+<div class="text-slate-900 h-screen bg-slate-50 px-2 py-4">
   <header>
     <h1 class="text-2xl font-bold text-center mt-3 mb-1">
       INGDLC for SOOP

@@ -9,7 +9,7 @@
   let input = $state("");
 
   let addInput = () => {
-    if (input) {
+    if (input.trim()) {
       configList = [...configList, input.trim()];
       input = "";
     }

@@ -26,5 +26,5 @@
     "src/**/*.mts",
     "src/**/*.svelte"
   ],
-  "extends": "@tsconfig/svelte/tsconfig.json"
+  "extends": "@tsconfig/svelte/tsconfig.json",
 }
