@@ -1,5 +1,3 @@
-<!--  도배 자동 복사  -->
-
 <script lang="ts">
   import {onMount} from "svelte";
   import {configStore, loadConfig} from "@/modules/configStore";
@@ -14,6 +12,7 @@
   let source: MediaElementAudioSourceNode | null = null;
   let compressor: DynamicsCompressorNode | null = null;
   let acActive = $state(false);
+  let onInterval = false;
 
   // SOOP 자체 Toast 사용하기
   function toast(text: string) {
@@ -92,7 +91,6 @@
       source.connect(compressor);
       compressor.connect(audioCtx.destination);
       acActive = true;
-      console.log("Compressor ON");
       toast("볼륨 평준화가 켜졌습니다.");
     } else {
       source.disconnect(compressor);
@@ -135,7 +133,7 @@
           button.click();
         }
       }, 1000)
-      setTimeout(interval(), (86400-time)*1000+2000);
+      setTimeout(interval, (86400-time)*1000+2000);
     }
   }
 
@@ -172,11 +170,23 @@
     currentBlockGrade = Number($config.blockGrade?.enabled || 0);
   });
 
-  // 채팅 숨기기
-  function hideElement(targetElement: HTMLElement) {
-    const chatList = targetElement.closest(".chatting-list-item");
-    if (chatList) {
-      (chatList as HTMLElement).style.display = "none";
+  // 채팅에서 도배 가져오기
+  function mujisungFromChat(message: string) {
+    const mujisungRegex = /^(.+?)\1+$/;
+    const emojiRegex = /\p{Emoji_Presentation}/gu;
+
+    const mujisungMatch = message.match(mujisungRegex);
+    if (mujisungMatch) {
+      const mujisungUnit = mujisungMatch[1].trim();
+      if (emojiRegex.test(mujisungUnit) && !$configStore.mujisung.exception.includes(mujisungUnit) && !$configStore.mujisung.fromChat.includes(mujisungUnit)) {
+        configStore.update(current => ({
+          ...current,
+          mujisung: {
+            ...current.mujisung,
+            fromChat: [...current.mujisung.fromChat, mujisungUnit]
+          }
+        }))
+      }
     }
   }
 
@@ -187,21 +197,24 @@
     if (node.dataset.ingdlcProcessed) return;
     node.dataset.ingdlcProcessed = "true";
 
-    const targetElement = node.hasAttribute("user_nick")
-        ? node
-        : node.querySelector?.('[user_nick]');
+    const chatItem = node.className === "chatting-list-item" ? node : none;
+    if (chatItem instanceof HTMLElement) {
+      // const userElement = chatItem.querySelector(".username").firstElementChild;
+      const userElement = chatItem.querySelector("button");
+      if (userElement instanceof HTMLElement) {
+        const userNick = userElement.getAttribute("user_nick") || "";
+        const userGrade = userElement.getAttribute("grade") || "";
 
-    if (targetElement instanceof HTMLElement) {
-      const userNick = targetElement.getAttribute("user_nick") || "";
-      const userGrade = targetElement.getAttribute("grade") || "";
+        const isUserBlocked = blockSet.has(userNick);
+        const isGradeBlocked =
+            (currentBlockGrade >= 1 && userGrade === "user") ||
+            (currentBlockGrade >= 2 && userGrade === "fan");
 
-      const isUserBlocked = blockSet.has(userNick);
-      const isGradeBlocked =
-          (currentBlockGrade >= 1 && userGrade === "user") ||
-          (currentBlockGrade >= 2 && userGrade === "fan");
-
-      if (isUserBlocked || isGradeBlocked) {
-        hideElement(targetElement);
+        if (isUserBlocked || isGradeBlocked) {
+          chatItem.style.display = "none";
+        } else if (node.querySelector(".msg")) {
+          mujisungFromChat(node.querySelector(".msg").innerHTML);
+        }
       }
     }
   }
@@ -241,6 +254,79 @@
     node.querySelector(".btn-close").before(blockUl);
   }
 
+  // 현재 방송 중인지 확인하고, 방송 중이 아니라면 방송 시작 시 새로고침하기
+  async function reloadWhenLive() {
+    if ($configStore.reload.enabled === 1 && !onInterval) {
+      const userId = document.getElementById("streamerNick").dataset.bj_id;
+      const url = `https://chapi.sooplive.co.kr/api/${userId}/station`;
+      const res = await (await fetch(url)).json();
+      if (res.broad === null) {
+        onInterval = true;
+        toast("방송이 시작되면 새로고침합니다.");
+        setInterval(async () => {
+          const response = await (await fetch(url)).json();
+          if (response.broad) {
+            window.location.reload();
+          }
+        }, 3000);
+      }
+    }
+  }
+
+  // 방송이 끝나면 reloadWhenLive 실행하기
+  async function onBroadEnd() {
+    setTimeout(() => {
+      const video = document.querySelector('video');
+
+      video.addEventListener('timeupdate', async () => {
+        if (video.currentTime === 0) await reloadWhenLive();
+      });
+    }, 1000)
+  }
+
+  // async function recordVideo(seconds = 5) {
+  //   const video = document.querySelector('video');
+  //   if (!video) {
+  //     console.error("비디오 요소를 찾을 수 없습니다.");
+  //     return;
+  //   }
+  //
+  //   // 1. 비디오 요소로부터 스트림 추출
+  //   // captureStream()은 해당 요소의 현재 재생 내용을 캡처합니다.
+  //   const stream = video.captureStream ? video.captureStream() : video.mozCaptureStream();
+  //
+  //   // 2. MediaRecorder 설정 (코덱은 브라우저 지원에 따라 설정)
+  //   const recorder = new MediaRecorder(stream, {
+  //     mimeType: 'video/webm; codecs=vp9'
+  //   });
+  //
+  //   const chunks = [];
+  //   recorder.ondataavailable = (e) => {
+  //     if (e.data.size > 0) chunks.push(e.data);
+  //   };
+  //
+  //   // 3. 녹화 종료 시 다운로드 로직
+  //   recorder.onstop = () => {
+  //     const blob = new Blob(chunks, { type: 'video/webm' });
+  //     const url = URL.createObjectURL(blob);
+  //     const a = document.createElement('a');
+  //     a.href = url;
+  //     a.download = `recorded_video_${new Date().getTime()}.webm`;
+  //     a.click();
+  //     URL.revokeObjectURL(url);
+  //     console.log("녹화 완료 및 다운로드 시작");
+  //   };
+  //
+  //   // 4. 녹화 시작
+  //   recorder.start();
+  //   console.log(`${seconds}초간 녹화를 시작합니다...`);
+  //
+  //   // 5. 지정된 시간(5초) 후 중지
+  //   setTimeout(() => {
+  //     recorder.stop();
+  //   }, seconds * 1000);
+  // }
+
   onMount(async () => {
     // 복붙 금지 해제
     await loadConfig();
@@ -251,6 +337,11 @@
 
     likeClick();
     timelineCopy();
+    await reloadWhenLive();
+    await onBroadEnd();
+
+    // setTimeout(recordVideo, 5000)
+
 
     // 채팅 차단 MutationObserver
     const chatListObserver = new MutationObserver((mutations) => {

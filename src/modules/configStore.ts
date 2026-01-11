@@ -5,6 +5,7 @@ export interface AppConfig {
     enabled: 0 | 1 | 2,
     list: string[][],
     custom: string[],
+    fromChat: string[],
     exception: string[]
   },
   capture: {
@@ -39,6 +40,7 @@ const initialConfig: AppConfig = {
     enabled: 2,
     list: [],
     custom: [],
+    fromChat: [],
     exception: ["규칙", "채팅금지"]
   },
   capture: {
