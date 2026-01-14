@@ -9,6 +9,8 @@
 
   let showResetModal = $state(false);
 
+  let showErrorModal = $state(false);
+
   let mujisungQuery = $state("");
 
   async function performReset() {
@@ -21,7 +23,7 @@
     }
   }
 
-  function openModal(e: Event) {
+  function openResetModal(e: Event) {
     e.stopPropagation();
     showResetModal = true;
   }
@@ -67,12 +69,34 @@
 
   let inputRef: HTMLInputElement | undefined = $state();
 
-  async function handleSelect(text: string) {
+  async function mujisungCopy(text: string) {
     try {
-      await navigator.clipboard.writeText(text);
+      if (text.length > 128) {
+        console.error("Text length should be 128 or less.");
+        showErrorModal = true;
+        return;
+      }
+      const mujisungText = text.repeat((128 / text.length));
+
+      await navigator.clipboard.writeText(mujisungText);
       searchFocused = false;
       if (inputRef) {
         inputRef.blur();
+      }
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      if (tab?.id) {
+        // 1. 메인 윈도우 자체를 최상단으로 올리고 포커스 요청
+        await chrome.windows.update(tab.windowId, {
+          focused: true,
+          // drawAttention: true // 필요한 경우 창을 깜빡이게 함
+        });
+
+        // 2. 사이드 패널의 포커스를 완전히 뺏기 위해 페이지 내 요소에 메시지 전송
+        // 여기서 핵심은 '지연 시간'입니다.
+        setTimeout(() => {
+          chrome.tabs.sendMessage(tab.id, { action: "INGDLC_FOCUS_INPUT" });
+        }, 200);
       }
     } catch (e) {
       console.error(e)
@@ -124,9 +148,19 @@
                  bind:this={inputRef}
                  bind:value={mujisungQuery}
                  onfocus={() => {searchFocused = true}}
-                 onkeydown={(e) => e.key === 'Escape' && inputRef?.blur()}
+                 onkeydown={(e) => {
+                   if (e.key === 'Escape') {
+                     inputRef?.blur();
+                   } else if (e.key === 'Enter') {
+                     inputRef?.blur();
+                     mujisungCopy(mujisungFiltered[0][2]);
+                   }
+                 }}
                  onblur={() => {
-                   setTimeout(() => { searchFocused = false; }, 150);
+                   setTimeout(() => {
+                     searchFocused = false;
+                     mujisungQuery = "";
+                     }, 150);
                  }}
           />
         </div>
@@ -134,15 +168,15 @@
         <div
             class="{searchFocused ? 'block' : 'hidden'} absolute z-50 w-full mt-1.5 bg-white border-4 border-slate-200 rounded-lg shadow-xl overflow-hidden">
           <ul class="max-h-48 overflow-y-auto divide-y divide-slate-100">
-            {#each mujisungFiltered as item}
+            {#each mujisungFiltered as item, index}
               <li>
                 <button type="button"
-                        class="flex row w-full px-3 py-2 text-[11px] font-bold text-slate-600 hover:bg-slate-50 text-left transition-colors truncate"
+                        class="flex row w-full px-3 py-2 text-[11px] font-bold text-slate-600 hover:bg-slate-50 text-left transition-colors truncate mujisung-{index}"
                         onmousedown={(e) => {
                           e.preventDefault();
                         }}
                         onmouseup={() => {
-                          handleSelect(item[2]);
+                          mujisungCopy(item[2]);
                         }}
                 >
                   {#if item[0] === "틱톡 or 노래"}
@@ -197,7 +231,7 @@
 
   <footer>
     <div class="flex justify-center">
-      <button class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs" onclick={openModal}>설정 초기화</button>
+      <button class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs" onclick={openResetModal}>설정 초기화</button>
     </div>
   </footer>
 </div>
@@ -206,5 +240,14 @@
     bind:show={showResetModal}
     title="설정 초기화"
     message="도배 리스트를 포함한 모든 설정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    buttonMessage="확인"
     onConfirm={performReset}
 />
+
+<Modal
+    bind:show={showErrorModal}
+    title="오류"
+    message="도배 텍스트는 128자를 넘길 수 없습니다."
+    onConfirm={()=>{}}
+/>
+

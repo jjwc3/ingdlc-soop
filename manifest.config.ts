@@ -32,7 +32,8 @@ export default defineManifest({
     'sidePanel',
     'contentSettings',
     'storage',
-    'downloads'
+    'downloads',
+    'tabs'
   ],
   "web_accessible_resources": [
     {

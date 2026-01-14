@@ -54,7 +54,7 @@
       const filename = `[INGDLC] Capture_${new Date().getTime()}.png`;
 
       await chrome.runtime.sendMessage({
-        action: 'DOWNLOAD_FILE',
+        action: 'INGDLC_DOWNLOAD_FILE',
         payload: { url, filename }
       });
 
@@ -359,6 +359,37 @@
     })
     contextMenuObserver.observe(document.getElementById("chatbox"), {childList: true, subtree: false});
 
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message.action === "INGDLC_FOCUS_INPUT") {
+        const el = document.getElementById("write_area");
+        if (!el) return;
+
+        // [Trick] 1. 현재 페이지의 어떤 요소도 포커스를 잡지 못하게 잠시 튕겨냄
+        window.focus();
+
+        // [Trick] 2. 실제 사용자가 클릭한 것처럼 만들기 위해 가짜 버튼을 만들었다 지우거나
+        // 해당 요소에 직접적인 이벤트를 순차적으로 발생시킴
+        const events = ['mousedown', 'mouseup', 'click'];
+        events.forEach(name => {
+          el.dispatchEvent(new MouseEvent(name, {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          }));
+        });
+
+        // 3. 마지막으로 포커스와 커서 지정
+        setTimeout(() => {
+          el.focus();
+          const range = document.createRange();
+          const sel = window.getSelection();
+          range.selectNodeContents(el);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }, 50);
+      }
+    });
     return () => {
       events.forEach(evt => document.removeEventListener(evt, preventStop, true));
       window.removeEventListener('keydown', handleKeydown);
