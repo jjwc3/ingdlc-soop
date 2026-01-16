@@ -55,7 +55,7 @@
 
       await chrome.runtime.sendMessage({
         action: 'INGDLC_DOWNLOAD_FILE',
-        payload: { url, filename }
+        payload: {url, filename}
       });
 
       $configStore.checkLawAlert.enabled = 0;
@@ -133,7 +133,7 @@
           button.click();
         }
       }, 1000)
-      setTimeout(interval, (86400-time)*1000+2000);
+      setTimeout(interval, (86400 - time) * 1000 + 2000);
     }
   }
 
@@ -359,37 +359,6 @@
     })
     contextMenuObserver.observe(document.getElementById("chatbox"), {childList: true, subtree: false});
 
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.action === "INGDLC_FOCUS_INPUT") {
-        const el = document.getElementById("write_area");
-        if (!el) return;
-
-        // [Trick] 1. 현재 페이지의 어떤 요소도 포커스를 잡지 못하게 잠시 튕겨냄
-        window.focus();
-
-        // [Trick] 2. 실제 사용자가 클릭한 것처럼 만들기 위해 가짜 버튼을 만들었다 지우거나
-        // 해당 요소에 직접적인 이벤트를 순차적으로 발생시킴
-        const events = ['mousedown', 'mouseup', 'click'];
-        events.forEach(name => {
-          el.dispatchEvent(new MouseEvent(name, {
-            bubbles: true,
-            cancelable: true,
-            view: window
-          }));
-        });
-
-        // 3. 마지막으로 포커스와 커서 지정
-        setTimeout(() => {
-          el.focus();
-          const range = document.createRange();
-          const sel = window.getSelection();
-          range.selectNodeContents(el);
-          range.collapse(false);
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }, 50);
-      }
-    });
     return () => {
       events.forEach(evt => document.removeEventListener(evt, preventStop, true));
       window.removeEventListener('keydown', handleKeydown);
@@ -424,9 +393,22 @@
 {/if}
 
 <style>
-  li { list-style: none; display: inline-block; }
-  button { background: none; border: none; cursor: pointer; padding: 0; }
-  img { width: 32px; }
+  li {
+    list-style: none;
+    display: inline-block;
+  }
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  img {
+    width: 32px;
+  }
+
   .active-filter {
     filter: opacity(0.5) drop-shadow(0 0 0 #7398ff) saturate(500%);
   }

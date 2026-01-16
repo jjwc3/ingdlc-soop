@@ -71,33 +71,21 @@
 
   async function mujisungCopy(text: string) {
     try {
-      if (text.length > 128) {
+      if (text.trim().length > 128) {
         console.error("Text length should be 128 or less.");
         showErrorModal = true;
         return;
       }
-      const mujisungText = text.repeat((128 / text.length));
+      const temp = text.trim().concat(' ');
+      const mujisungText = temp.repeat((128 / temp.length));
 
       await navigator.clipboard.writeText(mujisungText);
       searchFocused = false;
       if (inputRef) {
         inputRef.blur();
       }
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-      if (tab?.id) {
-        // 1. 메인 윈도우 자체를 최상단으로 올리고 포커스 요청
-        await chrome.windows.update(tab.windowId, {
-          focused: true,
-          // drawAttention: true // 필요한 경우 창을 깜빡이게 함
-        });
-
-        // 2. 사이드 패널의 포커스를 완전히 뺏기 위해 페이지 내 요소에 메시지 전송
-        // 여기서 핵심은 '지연 시간'입니다.
-        setTimeout(() => {
-          chrome.tabs.sendMessage(tab.id, { action: "INGDLC_FOCUS_INPUT" });
-        }, 200);
-      }
+      window.close();
     } catch (e) {
       console.error(e)
     }
@@ -120,7 +108,9 @@
       Ver.<span>{chrome.runtime.getManifest().version}</span>
     </div>
     <div class="absolute right-2 top-2">
-      <a href="index.html" target="_blank" class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs">새 창에서 열기</a>
+      <a href="index.html" target="_blank"
+         class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs">새
+        창에서 열기</a>
     </div>
   </header>
   <div class="flex flex-col">
@@ -205,6 +195,7 @@
           title="커스텀 도배 리스트"
           placeHolder="ex) 도배💖만들어줘💥"
           bind:configList={$configStore.mujisung.custom}
+          bind:showErrorModal={showErrorModal}
       />
 
       <InputAndAdd
@@ -231,7 +222,10 @@
 
   <footer>
     <div class="flex justify-center">
-      <button class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs" onclick={openResetModal}>설정 초기화</button>
+      <button
+          class="hover:cursor-pointer text-slate-400 hover:text-slate-600 hover:font-bold transition-all duration-300 ease-in-out text-xs"
+          onclick={openResetModal}>설정 초기화
+      </button>
     </div>
   </footer>
 </div>
@@ -247,7 +241,7 @@
 <Modal
     bind:show={showErrorModal}
     title="오류"
-    message="도배 텍스트는 128자를 넘길 수 없습니다."
+    message="텍스트는 128자를 넘길 수 없습니다."
     onConfirm={()=>{}}
 />
 
