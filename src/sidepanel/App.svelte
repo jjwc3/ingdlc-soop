@@ -16,6 +16,7 @@
   async function performReset() {
     try {
       await resetConfig();
+      await mujisungUpdate();
     } catch (error) {
       console.error(error);
     } finally {
@@ -54,10 +55,12 @@
   }
 
   let mujisungFiltered = $derived.by(() => {
+    const fromChat = $configStore.mujisung.fromChat.slice(-3);
+    const mappedFromChat = fromChat.map(i => ["자동", "자동", i]);
     const list = $configStore.mujisung.list;
     const custom = $configStore.mujisung.custom;
     const mappedCustom = custom.map(i => ["커스텀", "커스텀", i]);
-    const final = [...list, ...mappedCustom];
+    const final = [...mappedFromChat, ...mappedCustom, ...list];
     let query = mujisungQuery.trim().toLowerCase();
     if (!query) return final;
 
@@ -79,7 +82,7 @@
       const temp = text.trim().concat(' ');
       const mujisungText = temp.repeat((128 / temp.length));
 
-      await navigator.clipboard.writeText(mujisungText);
+      await navigator.clipboard.writeText(mujisungText.trim());
       searchFocused = false;
       if (inputRef) {
         inputRef.blur();
@@ -173,7 +176,7 @@
                     <span class="w-1/5 truncate">{item[0]}</span>
                     <span class="w-px h-4 mx-1.5 bg-slate-300"></span>
                     <span class="w-4/5 truncate">{item[2]}</span>
-                  {:else if item[0] === "기타" || item[0] === "커스텀"}
+                  {:else if item[0] === "기타" || item[0] === "커스텀" || item[0] === "자동"}
                     <span class="w-1/10 truncate">{item[0]}</span>
                     <span class="w-px h-4 mx-1.5 bg-slate-300"></span>
                     <span class="w-9/10 truncate">{item[2]}</span>

@@ -11,7 +11,7 @@
 
   let addInput = () => {
     if (input.trim()) {
-      if (input.trim() <= 128) {
+      if (input.trim().length <= 128) {
         configList = [...configList, input.trim()];
         input = "";
       } else {

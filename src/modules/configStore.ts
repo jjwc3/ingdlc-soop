@@ -14,7 +14,8 @@ export interface AppConfig {
   checkLawAlert: {
     enabled: 0 | 1
   },
-  path: {
+  download: {
+    enabled: 0 | 1 | 2
     path: string,
     os: 0 | 1
   },
@@ -49,7 +50,8 @@ const initialConfig: AppConfig = {
   checkLawAlert: {
     enabled: 1,
   },
-  path: {
+  download: {
+    enabled: 2,
     path: "",
     os: 0,
   },

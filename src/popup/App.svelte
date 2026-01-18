@@ -157,7 +157,7 @@
         class="border border-slate-100 shadow-xl hover:shadow-2xl ease-in-out duration-500 rounded-md bg-white px-3 py-4 m-4 bg-opacity-70 hover:bg-opacity-100 transition-all">
 
       <MultiSwitch
-          title="도배버튼"
+          title="도배버튼(LIVE)"
           subtitle="단축키: Alt+M"
           options={[
             {label: 'OFF', value: 0},
@@ -167,7 +167,7 @@
           bind:value={$configStore.mujisung.enabled}
       />
       <MultiSwitch
-          title="캡쳐버튼"
+          title="캡쳐버튼(LIVE, VOD)"
           subtitle="단축키: Alt+C"
           options={[
           {label: 'OFF', value: 0},
@@ -177,7 +177,7 @@
           bind:value={$configStore.capture.enabled}
       />
       <MultiSwitch
-          title="자동 음량 조절"
+          title="자동 음량 조절 버튼(LIVE, VOD)"
           subtitle="단축키: Alt+A"
           options={[
           {label: 'OFF', value: 0},
@@ -185,6 +185,16 @@
           {label: '단축키 + 버튼', value: 2}
         ]}
           bind:value={$configStore.audioComp.enabled}
+      />
+      <MultiSwitch
+          title="다운로드 버튼(VOD)"
+          subtitle="단축키: Alt+D"
+          options={[
+          {label: 'OFF', value: 0},
+          {label: '단축키', value: 1},
+          {label: '단축키 + 버튼', value: 2}
+        ]}
+          bind:value={$configStore.download.enabled}
       />
       <MultiSwitch
           title="방송 시작 시 새로고침"
@@ -210,7 +220,7 @@
         <div class="relative flex items-center bg-slate-200 rounded-lg p-1 w-full overflow-hidden">
           <input
               class="relative z-10 flex-1 p-2 text-sm font-bold transition-colors duration-200 text-slate-700"
-              bind:value={$configStore.path.path}
+              bind:value={$configStore.download.path}
               placeholder="경로 입력"
           >
         </div>

@@ -58,8 +58,6 @@
         payload: {url, filename}
       });
 
-      $configStore.checkLawAlert.enabled = 0;
-
       console.log("Captured");
 
     } catch (error) {
@@ -104,7 +102,10 @@
   // captureFunc() 첫 호출 시 경고문 띄우기
   function checkLaw() {
     if ($configStore.checkLawAlert.enabled) {
-      return confirm("설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.");
+      if (confirm("설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.")) {
+        $configStore.checkLawAlert.enabled = 0;
+        return true;
+      } else return false;
     } else {
       return true;
     }
@@ -172,7 +173,7 @@
 
   // 채팅에서 도배 가져오기
   function mujisungFromChat(message: string) {
-    const mujisungRegex = /^(.+?)\1+$/;
+    const mujisungRegex = /^(.+?)(?:\s?\1)+$/;
     const emojiRegex = /\p{Emoji_Presentation}/gu;
 
     const mujisungMatch = message.match(mujisungRegex);
@@ -195,9 +196,10 @@
 
     if (!(node instanceof HTMLElement)) return;
     if (node.dataset.ingdlcProcessed) return;
+    const chatItem = node.className === "chatting-list-item" ? node : none;
+    if (!chatItem) return;
     node.dataset.ingdlcProcessed = "true";
 
-    const chatItem = node.className === "chatting-list-item" ? node : none;
     if (chatItem instanceof HTMLElement) {
       // const userElement = chatItem.querySelector(".username").firstElementChild;
       const userElement = chatItem.querySelector("button");
@@ -364,6 +366,13 @@
       window.removeEventListener('keydown', handleKeydown);
       chatListObserver.disconnect();
       contextMenuObserver.disconnect();
+      configStore.update(current => ({
+        ...current,
+        mujisung: {
+          ...current.mujisung,
+          fromChat: []
+        }
+      }))
     };
   });
 </script>
