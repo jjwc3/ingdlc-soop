@@ -108,6 +108,13 @@
   onMount(async () => {
     await loadConfig();
     await fetchSchedule();
+		chrome.runtime.getPlatformInfo((info) => {
+			if (info.os === "win") {
+				$configStore.download.os = 0;
+      } else {
+				$configStore.download.os = 1;
+      }
+		});
   })
 </script>
 
@@ -239,5 +246,6 @@
     bind:show={showResetModal}
     title="설정 초기화"
     message="도배 리스트를 포함한 모든 설정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    buttonMessage="확인"
     onConfirm={performReset}
 />
