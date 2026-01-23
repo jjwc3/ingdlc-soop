@@ -196,6 +196,7 @@
 
       <InputAndAdd
           title="커스텀 도배 리스트"
+          subtitle="엔터나 버튼으로 추가"
           placeHolder="ex) 도배💖만들어줘💥"
           bind:configList={$configStore.mujisung.custom}
           bind:showErrorModal={showErrorModal}
@@ -210,12 +211,14 @@
 
       <InputAndAdd
           title="LIVE 자동 UP 대상"
+          subtitle="엔터나 버튼으로 추가"
           placeHolder="줄바꿈으로 구분해 스트리머 ID 입력"
           bind:configList={$configStore.autoUp.custom}
       />
 
       <InputAndAdd
           title="LIVE 채팅 가리기"
+          subtitle="엔터나 버튼으로 추가"
           placeHolder="차단할 유저 닉네임 입력"
           bind:configList={$configStore.blockUser.list}
       />
