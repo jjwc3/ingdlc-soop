@@ -1,6 +1,7 @@
 import { mount } from 'svelte'
+// @ts-ignore
 import App from './App.svelte'
-import './style.css'
+import '../app.css'
 
 const app = mount(App, {
   target: document.getElementById('app')!,
