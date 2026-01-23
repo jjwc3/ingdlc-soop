@@ -286,6 +286,27 @@
     }, 1000)
   }
 
+  // 영상 광고 자동 SKIP
+  function skipAd() {
+    let intervalCount = 0;
+    setTimeout(() => {
+      const interval = setInterval(() => {
+        try {
+          const adVideo: HTMLVideoElement = document.querySelector("#da_video");
+          const button: HTMLButtonElement = document.querySelector("#da_btn_skip");
+          if (adVideo && button.style.display !== "none" && intervalCount <= 30) {
+            button.click();
+            intervalCount += 1;
+          } else {
+            clearInterval(interval);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }, 500)
+    }, 5000);
+  }
+
   // async function recordVideo(seconds = 5) {
   //   const video = document.querySelector('video');
   //   if (!video) {
@@ -341,6 +362,7 @@
     timelineCopy();
     await reloadWhenLive();
     await onBroadEnd();
+    skipAd();
 
     // setTimeout(recordVideo, 5000)
 

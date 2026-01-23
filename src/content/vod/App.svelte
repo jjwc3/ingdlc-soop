@@ -67,21 +67,24 @@
 		}
 	}
 
-	function downloadFunc() {
+	async function downloadFunc() {
 		const title = document.querySelector(".broadcast_title").innerHTML;
 		const safeTitle = title.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣 \-_]/g, "");
 
 		const path = $configStore.download.path;
 		let finalPath:string;
-		if ($configStore.download.os) {
-			finalPath = path[path.length-1] === "/" ? path : path+"/";
+
+    const os = await chrome.runtime.sendMessage({action: "INGDLC_OS"});
+
+    if (os === "win") {
+      finalPath = path[path.length-1] === "\\" ? path : path+"\\";
     } else {
-			finalPath = path[path.length-1] === "\\" ? path : path+"\\";
+      finalPath = path[path.length-1] === "/" ? path : path+"/";
     }
 
 		if (vodURL) {
 			let command = `ffmpeg -i "${vodURL}" -c copy "${finalPath}${new Date().getTime()}_${safeTitle.trim()}.mp4"`
-			navigator.clipboard.writeText(command);
+			await navigator.clipboard.writeText(command);
 			toast("명령어가 복사되었습니다.");
 			downloadActive = false;
     } else {

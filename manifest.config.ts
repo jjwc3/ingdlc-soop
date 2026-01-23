@@ -3,14 +3,17 @@ import pkg from './package.json'
 
 export default defineManifest({
   manifest_version: 3,
-  name: pkg.name,
+  name: "INGDLC for SOOP",
   version: pkg.version,
   icons: {
-    48: 'public/logo.png',
+    16: 'public/ingdlc-soop-icon-16.png',
+    48: 'public/ingdlc-soop-icon-48.png',
+    128: 'public/ingdlc-soop-icon-128.png',
   },
   action: {
     default_icon: {
-      48: 'public/logo.png',
+      16: 'public/ingdlc-soop-icon-16.png',
+      32: 'public/ingdlc-soop-icon-32.png',
     },
     default_popup: 'src/popup/index.html',
   },
@@ -30,10 +33,8 @@ export default defineManifest({
   ],
   permissions: [
     'sidePanel',
-    'contentSettings',
     'storage',
     'downloads',
-    'tabs',
     'webRequest'
   ],
   "web_accessible_resources": [
@@ -43,7 +44,7 @@ export default defineManifest({
     }
   ],
   host_permissions: [
-      "<all_urls>"
+      "https://*.sooplive.co.kr/*"
   ],
   side_panel: {
     default_path: 'src/sidepanel/index.html',

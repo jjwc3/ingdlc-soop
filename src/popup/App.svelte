@@ -108,13 +108,6 @@
   onMount(async () => {
     await loadConfig();
     await fetchSchedule();
-		chrome.runtime.getPlatformInfo((info) => {
-			if (info.os === "win") {
-				$configStore.download.os = 0;
-      } else {
-				$configStore.download.os = 1;
-      }
-		});
   })
 </script>
 

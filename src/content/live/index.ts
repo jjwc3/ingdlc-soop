@@ -1,5 +1,6 @@
 import { mount } from "svelte";
 import App from "./App.svelte";
+import "./removeAd.css";
 
 async function init() {
   const targetAnchor = await waitForElement(".game_point");

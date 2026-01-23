@@ -17,7 +17,6 @@ export interface AppConfig {
   download: {
     enabled: 0 | 1 | 2
     path: string,
-    os: 0 | 1
   },
   autoUp: {
     custom: string[]
@@ -53,7 +52,6 @@ const initialConfig: AppConfig = {
   download: {
     enabled: 2,
     path: "",
-    os: 0,
   },
   autoUp: {
     custom: ["nanajam"]
@@ -65,7 +63,7 @@ const initialConfig: AppConfig = {
     enabled: 2
   },
   blockUser: {
-    list: [""]
+    list: []
   },
   blockGrade: {
     enabled: 0
