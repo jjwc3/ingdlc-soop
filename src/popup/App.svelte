@@ -146,7 +146,7 @@
   <hr class="mx-7 my-3 border-slate-300">
 
   <footer class="flex justify-between mx-7">
-    <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://ch.sooplive.co.kr/nanajam" target="_blank">💜SOOP</a>
+    <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://ch.sooplive.com/nanajam" target="_blank">💜SOOP</a>
     <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://cafe.naver.com/ingsfriends" target="_blank">💕잉친쓰</a>
     <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://docs.google.com/spreadsheets/d/1n-ERReiHweDiCJcXTMkWRBUellktnBYQDbFmouExnas" target="_blank">💚방송일정</a>
     <a class="opacity-70 hover:opacity-100 hover:font-bold" href="https://www.youtube.com/channel/UCW945UjEs6Jm3rVNvPEALdg" target="_blank">❤️유튜브</a>

@@ -260,7 +260,7 @@
   async function reloadWhenLive() {
     if ($configStore.reload.enabled === 1 && !onInterval) {
       const userId = document.getElementById("streamerNick").dataset.bj_id;
-      const url = `https://chapi.sooplive.co.kr/api/${userId}/station`;
+      const url = `https://chapi.sooplive.com/api/${userId}/station`;
       const res = await (await fetch(url)).json();
       if (res.broad === null) {
         onInterval = true;
