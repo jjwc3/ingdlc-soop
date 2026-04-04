@@ -24,11 +24,18 @@ export default defineManifest({
   content_scripts: [
     {
       js: ['src/content/live/index.ts'],
-      matches: ['https://play.sooplive.co.kr/*'],
+      matches: [
+        'https://play.sooplive.co.kr/*',
+        'https://play.sooplive.com/*',
+        'https://www.sooplive.com/*'
+      ],
     },
     {
       js: ['src/content/vod/index.ts'],
-      matches: ['https://vod.sooplive.co.kr/*']
+      matches: [
+        'https://vod.sooplive.co.kr/*',
+        'https://vod.sooplive.com/*'
+      ]
     }
   ],
   permissions: [
@@ -44,7 +51,8 @@ export default defineManifest({
     }
   ],
   host_permissions: [
-      "https://*.sooplive.co.kr/*"
+      "https://*.sooplive.co.kr/*",
+      "https://*.sooplive.com/*"
   ],
   side_panel: {
     default_path: 'src/sidepanel/index.html',
