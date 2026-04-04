@@ -22,14 +22,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.webRequest.onCompleted.addListener(
     (details) => {
-      if (details.url.includes("sooplive.co.kr") && details.url.includes(".smil/manifest.m3u8")) {
+      if (details.url.includes("sooplive") && details.url.includes(".smil/manifest.m3u8")) {
         chrome.tabs.sendMessage(details.tabId, {action: "INGDLC_VOD", url: details.url}).catch(() => {
         })
       }
       return undefined;
     },
     {
-      urls: ["https://*.sooplive.co.kr/*"],
+      urls: [
+        "https://*.sooplive.co.kr/*",
+        "https://*.sooplive.com/*"
+      ],
       types: ["xmlhttprequest", "ping"]
     }
 );
