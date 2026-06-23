@@ -1,154 +1,154 @@
 <script lang="ts">
-	import {onMount} from "svelte";
-	import {configStore, loadConfig} from "@/modules/configStore";
+  import {onMount} from "svelte";
+  import {configStore, loadConfig} from "@/modules/configStore";
 
-	// Images
-	const downloadImg = new URL("../../assets/download.png", import.meta.url).href;
-	const audioImg = new URL("../../assets/audio.png", import.meta.url).href;
-	const captureImg = new URL("../../assets/capture.png", import.meta.url).href;
+  // Images
+  const downloadImg = new URL("../../assets/download.png", import.meta.url).href;
+  const audioImg = new URL("../../assets/audio.png", import.meta.url).href;
+  const captureImg = new URL("../../assets/capture.png", import.meta.url).href;
 
-	// Audio Compressor Variables
-	let audioCtx: AudioContext | null = null;
-	let source: MediaElementAudioSourceNode | null = null;
-	let compressor: DynamicsCompressorNode | null = null;
-	let acActive = $state(false);
+  // Audio Compressor Variables
+  let audioCtx: AudioContext | null = null;
+  let source: MediaElementAudioSourceNode | null = null;
+  let compressor: DynamicsCompressorNode | null = null;
+  let acActive = $state(false);
 
-	let vodURL: string;
-	let downloadActive = $state(false);
+  let vodURL: string;
+  let downloadActive = $state(false);
 
-	// SOOP 자체 Toast 사용하기
-	function toast(text: string) {
-		const toast: HTMLElement = document.getElementById("toastMessage");
-		const div = document.createElement("div");
-		div.id = "INGDLC-TOAST";
-		const p = document.createElement("p");
-		p.innerHTML = text;
-		div.appendChild(p);
-		toast.appendChild(div);
+  // SOOP 자체 Toast 사용하기
+  function toast(text: string) {
+    const toast: HTMLElement = document.getElementById("toastMessage");
+    const div = document.createElement("div");
+    div.id = "INGDLC-TOAST";
+    const p = document.createElement("p");
+    p.innerHTML = text;
+    div.appendChild(p);
+    toast.appendChild(div);
 
-		setTimeout(() => {
-			toast.querySelector("#INGDLC-TOAST").remove();
-		}, 2000);
-	}
+    setTimeout(() => {
+      toast.querySelector("#INGDLC-TOAST").remove();
+    }, 2000);
+  }
 
-	// 방송 화면 캡쳐하기
-	async function captureFunc() {
-		const video = document.querySelector('video');
-		if (!video) {
-			console.error("No Video");
-			return;
-		}
-
-		if (!checkLaw()) return;
-
-		try {
-			const canvas = document.createElement('canvas');
-			canvas.width = video.videoWidth;
-			canvas.height = video.videoHeight;
-
-			const ctx = canvas.getContext('2d');
-			if (!ctx) return;
-
-			ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-			const url = canvas.toDataURL('image/png');
-
-			const filename = `[INGDLC] Capture_${new Date().getTime()}.png`;
-
-			await chrome.runtime.sendMessage({
-				action: 'INGDLC_DOWNLOAD_FILE',
-				payload: {url, filename}
-			});
-
-			console.log("Captured");
-
-		} catch (error) {
-			console.error("Capture failed:", error);
-		}
-	}
-
-	async function downloadFunc() {
-		const title = document.querySelector(".broadcast_title").innerHTML;
-		const safeTitle = title.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣 \-_]/g, "");
-
-		const path = $configStore.download.path;
-		let finalPath:string;
-
-    const os = await chrome.runtime.sendMessage({action: "INGDLC_OS"});
-
-    if (os === "win") {
-      finalPath = path[path.length-1] === "\\" ? path : path+"\\";
-    } else {
-      finalPath = path[path.length-1] === "/" ? path : path+"/";
+  // 방송 화면 캡쳐하기
+  async function captureFunc() {
+    const video = document.querySelector('video');
+    if (!video) {
+      console.error("No Video");
+      return;
     }
 
-		if (vodURL) {
-			let command = `ffmpeg -i "${vodURL}" -c copy "${finalPath}${new Date().getTime()}_${safeTitle.trim()}.mp4"`
-			await navigator.clipboard.writeText(command);
-			toast("명령어가 복사되었습니다.");
-			downloadActive = false;
-    } else {
-			toast("영상이 로드되지 않았습니다. 영상을 재생해주세요.");
+    if (!checkLaw()) return;
+
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const url = canvas.toDataURL('image/png');
+
+      const filename = `[INGDLC] Capture_${new Date().getTime()}.png`;
+
+      await chrome.runtime.sendMessage({
+        action: 'INGDLC_DOWNLOAD_FILE',
+        payload: {url, filename}
+      });
+
+      console.log("Captured");
+
+    } catch (error) {
+      console.error("Capture failed:", error);
     }
-	}
+  }
 
-	// Audio Compressor 켜고 끄기
-	function audioFunc() {
-		const video = document.querySelector('video');
-		if (!video) return;
+  async function downloadFunc() {
+    const vodTitle: string = (new Date().getTime()) + document.querySelector(".broadcast_title").innerHTML.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣 \-_]/g, "");
 
-		if (!audioCtx) {
-			audioCtx = new AudioContext();
-			source = audioCtx.createMediaElementSource(video);
-			compressor = audioCtx.createDynamicsCompressor();
 
-			compressor.threshold.setValueAtTime(-50, audioCtx.currentTime);
-			compressor.knee.setValueAtTime(40, audioCtx.currentTime);
-			compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
-			compressor.attack.setValueAtTime(0, audioCtx.currentTime);
-			compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
+    if (vodURL) {
+      await chrome.runtime.sendMessage({
+        action: 'INGDLC_DOWNLOAD_VOD',
+        payload: {vodURL, vodTitle}
+      });
+      toast("사이드 패널을 확인해주세요.");
+      downloadActive = false;
+    } else {
+      toast("영상이 로드되지 않았습니다. 영상을 재생해주세요.");
+    }
+  }
 
-			source.connect(audioCtx.destination);
-		}
+  // Audio Compressor 켜고 끄기
+  function audioFunc() {
+    const video = document.querySelector('video');
+    if (!video) return;
 
-		if (!acActive) {
-			source.disconnect(audioCtx.destination);
-			source.connect(compressor);
-			compressor.connect(audioCtx.destination);
-			acActive = true;
-			toast("볼륨 평준화가 켜졌습니다.");
-		} else {
-			source.disconnect(compressor);
-			compressor.disconnect(audioCtx.destination);
-			source.connect(audioCtx.destination);
-			acActive = false;
-			toast("볼륨 평준화가 꺼졌습니다.");
-		}
-	}
+    if (!audioCtx) {
+      audioCtx = new AudioContext();
+      source = audioCtx.createMediaElementSource(video);
+      compressor = audioCtx.createDynamicsCompressor();
 
-	// captureFunc() 첫 호출 시 경고문 띄우기
-	function checkLaw() {
-		if ($configStore.checkLawAlert.enabled) {
-			if (confirm("설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.")) {
-				$configStore.checkLawAlert.enabled = 0;
-				return true;
-			} else return false;
-		} else {
-			return true;
-		}
-	}
+      compressor.threshold.setValueAtTime(-50, audioCtx.currentTime);
+      compressor.knee.setValueAtTime(40, audioCtx.currentTime);
+      compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
+      compressor.attack.setValueAtTime(0, audioCtx.currentTime);
+      compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
 
-	onMount(async () => {
-		await loadConfig();
-		chrome.runtime.onMessage.addListener(async (request) => {
-			if (request.action === "INGDLC_VOD") {
-				if (document.getElementsByClassName("video_edit")[0] && !document.getElementsByClassName("video_edit")[0]?.className.includes("off")) return;
-				if (document.querySelector(".btn_normal") && document.querySelector(".btn_normal").innerHTML.includes("스토리")) return;
-				vodURL = request.url;
-				downloadActive = true;
-			}
-		})
-	});
+      source.connect(audioCtx.destination);
+    }
+
+    if (!acActive) {
+      source.disconnect(audioCtx.destination);
+      source.connect(compressor);
+      compressor.connect(audioCtx.destination);
+      acActive = true;
+      toast("볼륨 평준화가 켜졌습니다.");
+    } else {
+      source.disconnect(compressor);
+      compressor.disconnect(audioCtx.destination);
+      source.connect(audioCtx.destination);
+      acActive = false;
+      toast("볼륨 평준화가 꺼졌습니다.");
+    }
+  }
+
+  // captureFunc() 첫 호출 시 경고문 띄우기
+  function checkLaw() {
+    if ($configStore.checkLawAlert.enabled) {
+      if (confirm("설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.")) {
+        $configStore.checkLawAlert.enabled = 0;
+        return true;
+      } else return false;
+    } else {
+      return true;
+    }
+  }
+
+  onMount(async () => {
+    await loadConfig();
+    chrome.runtime.onMessage.addListener(async (request) => {
+      if (request.action === "INGDLC_VOD") {
+        if (
+            (document.getElementsByClassName("video_edit")[0] && !document.getElementsByClassName("video_edit")[0]?.className.includes("off"))
+            || (document.querySelector(".btn_normal") && (document.querySelector(".btn_normal").innerHTML.includes("스토리") || document.querySelector(".btn_normal").innerHTML.includes("Story")))
+        ) {
+          try {
+            document.querySelector('#INGDLC-DOWNLOAD-LI').style.display = 'none';
+          } catch (e) {
+            console.log("Not loaded");
+          }
+          return;
+        }
+        vodURL = request.url;
+        downloadActive = true;
+      }
+    })
+  });
 </script>
 
 {#if location.href.includes("catch")}
