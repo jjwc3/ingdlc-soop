@@ -1,0 +1,110 @@
+name: CI/CD & Chrome Web Store Publish
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  # 1. PR 단계: 버전 증가 여부 및 빌드 사전 검증
+  check-version-and-build:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Get PR version
+        id: pr_version
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+
+      - name: Get main version
+        id: main_version
+        run: echo "version=$(jq -r .version main-branch/package.json)" >> $GITHUB_OUTPUT
+
+      - name: Compare versions
+        run: |
+          PR_VER="${{ steps.pr_version.outputs.version }}"
+          MAIN_VER="${{ steps.main_version.outputs.version }}"
+          echo "PR Version: $PR_VER"
+          echo "Main Version: $MAIN_VER"
+          if [ "$PR_VER" == "$MAIN_VER" ]; then
+            echo "Error: package.json version must be updated before merging!"
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test Build with Vite
+        run: npm run build
+
+  # 2. main 병합 단계: Chrome Web Store 배포 + GitHub Release 배포
+  publish:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # GitHub Release 및 Tag 생성을 위해 쓰기 권한 필요
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Version
+        id: get_version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Vite
+        run: npm run build
+
+      - name: Create Extension Zip
+        run: |
+          cd dist
+          zip -r ../extension.zip .
+          cd ..
+
+      - name: Upload & Publish to Chrome Web Store
+        uses: mobilefirstllc/cws-publish@latest
+        with:
+          action: 'publish'
+          client_id: ${{ secrets.CLIENT_ID }}
+          client_secret: ${{ secrets.CLIENT_SECRET }}
+          refresh_token: ${{ secrets.REFRESH_TOKEN }}
+          extension_id: ${{ secrets.EXTENSION_ID }}
+          zip_file: 'extension.zip'
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+          name: Release ${{ steps.get_version.outputs.tag_name }}
+          files: extension.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
