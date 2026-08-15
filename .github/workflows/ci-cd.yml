@@ -44,7 +44,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install dependencies
@@ -90,14 +90,14 @@ jobs:
           cd ..
 
       - name: Upload & Publish to Chrome Web Store
-        uses: mobilefirstllc/cws-publish@latest
-        with:
-          action: 'publish'
-          client_id: ${{ secrets.CLIENT_ID }}
-          client_secret: ${{ secrets.CLIENT_SECRET }}
-          refresh_token: ${{ secrets.REFRESH_TOKEN }}
-          extension_id: ${{ secrets.EXTENSION_ID }}
-          zip_file: 'extension.zip'
+        run: |
+          npx chrome-webstore-upload-cli upload --source extension.zip
+          npx chrome-webstore-upload-cli publish
+        env:
+          EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
