@@ -157,7 +157,7 @@
           try {
             document.querySelector('#INGDLC-DOWNLOAD-LI').style.display =
               'none';
-          } catch (e) {
+          } catch {
             console.log('Not loaded');
           }
           return;

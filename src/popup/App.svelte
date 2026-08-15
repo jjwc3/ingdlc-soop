@@ -3,12 +3,13 @@
 
   import Papa from 'papaparse';
 
+  import Header from '@/components/Header.svelte';
   import Modal from '@/components/Modal.svelte';
   import MultiSwitch from '@/components/MultiSwitch.svelte';
   import { configStore, loadConfig, resetConfig } from '@/modules/configStore';
 
-  function findAll(arr: Array, value: any) {
-    const indices = [];
+  function findAll<T>(arr: T[], value: T): number[] {
+    const indices: number[] = [];
     arr.forEach((element, index) => {
       if (element === value) {
         indices.push(index);
@@ -27,9 +28,7 @@
     const dd = d.getDate();
     const date = [yyyy, mm, dd];
 
-    const n = new Date(d);
-    n.setDate(d.getDate() + 1);
-    const nextDate = n.getDate();
+    const nextDate = new Date(yyyy, mm - 1, dd + 1).getDate();
 
     const url =
       'https://docs.google.com/spreadsheets/d/1n-ERReiHweDiCJcXTMkWRBUellktnBYQDbFmouExnas/export?format=csv';
@@ -117,29 +116,30 @@
   style="min-width:400px; max-width:400px"
   class=" bg-slate-50 px-2 py-4 text-slate-900"
 >
-  <header>
-    <h1 class="mt-3 mb-1 text-center text-2xl font-bold">INGDLC for SOOP</h1>
+  <Header {openSide} />
+  <!--  <header>-->
+  <!--    <h1 class="mt-3 mb-1 text-center text-2xl font-bold">INGDLC for SOOP</h1>-->
 
-    <div class="text-center text-xs text-slate-500">
-      Ver.<span>{chrome.runtime.getManifest().version}</span>
-    </div>
+  <!--    <div class="text-center text-xs text-slate-500">-->
+  <!--      Ver.<span>{chrome.runtime.getManifest().version}</span>-->
+  <!--    </div>-->
 
-    <div class="absolute top-2 left-2">
-      <button
-        class="text-xs text-slate-400 transition-all duration-300 ease-in-out hover:cursor-pointer hover:font-bold hover:text-slate-600"
-        onclick={openSide}>도배 도우미 열기</button
-      >
-    </div>
+  <!--    <div class="absolute top-2 left-2">-->
+  <!--      <button-->
+  <!--        class="text-xs text-slate-400 transition-all duration-300 ease-in-out hover:cursor-pointer hover:font-bold hover:text-slate-600"-->
+  <!--        onclick={openSide}>도배 도우미 열기</button-->
+  <!--      >-->
+  <!--    </div>-->
 
-    <div class="absolute top-2 right-2">
-      <a
-        href="index.html"
-        target="_blank"
-        class="text-xs text-slate-400 transition-all duration-300 ease-in-out hover:cursor-pointer hover:font-bold hover:text-slate-600"
-        >새 창에서 열기</a
-      >
-    </div>
-  </header>
+  <!--    <div class="absolute top-2 right-2">-->
+  <!--      <a-->
+  <!--        href="index.html"-->
+  <!--        target="_blank"-->
+  <!--        class="text-xs text-slate-400 transition-all duration-300 ease-in-out hover:cursor-pointer hover:font-bold hover:text-slate-600"-->
+  <!--        >새 창에서 열기</a-->
+  <!--      >-->
+  <!--    </div>-->
+  <!--  </header>-->
   <hr class="mx-7 my-3 border-slate-300" />
   <footer
     class="flex w-full items-center justify-between gap-4 px-7 text-sm font-bold"

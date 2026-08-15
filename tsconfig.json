@@ -15,6 +15,11 @@
     },
     "typeRoots": ["./node_modules/@types", "src/util"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.mts", "src/**/*.svelte"],
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.ts",
+    "src/**/*.mts",
+    "src/**/*.svelte"
+  ],
   "extends": "@tsconfig/svelte/tsconfig.json"
 }

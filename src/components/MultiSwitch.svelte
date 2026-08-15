@@ -30,7 +30,7 @@
         sliderWidth}% + 4px);"
     ></div>
 
-    {#each options as opt}
+    {#each options as opt (opt.value)}
       <button
         type="button"
         class="relative z-10 flex-1 py-1.5 text-[11px] font-bold transition-colors duration-200

@@ -223,7 +223,7 @@
   function processNode(node: Node) {
     if (!(node instanceof HTMLElement)) return;
     if (node.dataset.ingdlcProcessed) return;
-    const chatItem = node.className === 'chatting-list-item' ? node : none;
+    const chatItem = node.className === 'chatting-list-item' ? node : null;
     if (!chatItem) return;
     node.dataset.ingdlcProcessed = 'true';
 
