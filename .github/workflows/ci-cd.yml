@@ -1,6 +1,7 @@
 name: CI/CD & Chrome Web Store Publish
 
 on:
+  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
