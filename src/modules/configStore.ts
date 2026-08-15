@@ -1,38 +1,38 @@
-import {writable} from 'svelte/store';
+import { writable } from 'svelte/store';
 
 export interface AppConfig {
   mujisung: {
-    enabled: 0 | 1 | 2,
-    list: string[][],
-    custom: string[],
-    fromChat: string[],
-    exception: string[]
-  },
+    enabled: 0 | 1 | 2;
+    list: string[][];
+    custom: string[];
+    fromChat: string[];
+    exception: string[];
+  };
   capture: {
-    enabled: 0 | 1 | 2
-  },
+    enabled: 0 | 1 | 2;
+  };
   checkLawAlert: {
-    enabled: 0 | 1
-  },
+    enabled: 0 | 1;
+  };
   download: {
-    enabled: 0 | 1 | 2
-    path: string,
-  },
+    enabled: 0 | 1 | 2;
+    path: string;
+  };
   autoUp: {
-    custom: string[]
-  },
+    custom: string[];
+  };
   reload: {
-    enabled: 0 | 1
-  },
+    enabled: 0 | 1;
+  };
   audioComp: {
-    enabled: 0 | 1 | 2
-  },
+    enabled: 0 | 1 | 2;
+  };
   blockUser: {
-    list: string[]
-  },
+    list: string[];
+  };
   blockGrade: {
-    enabled: 0 | 1
-  }
+    enabled: 0 | 1;
+  };
 }
 
 const initialConfig: AppConfig = {
@@ -41,7 +41,7 @@ const initialConfig: AppConfig = {
     list: [],
     custom: [],
     fromChat: [],
-    exception: ["규칙", "채팅금지"]
+    exception: ['규칙', '채팅금지'],
   },
   capture: {
     enabled: 2,
@@ -51,24 +51,24 @@ const initialConfig: AppConfig = {
   },
   download: {
     enabled: 2,
-    path: "",
+    path: '',
   },
   autoUp: {
-    custom: ["nanajam"]
+    custom: ['nanajam'],
   },
   reload: {
-    enabled: 1
+    enabled: 1,
   },
   audioComp: {
-    enabled: 2
+    enabled: 2,
   },
   blockUser: {
-    list: []
+    list: [],
   },
   blockGrade: {
-    enabled: 0
-  }
-}
+    enabled: 0,
+  },
+};
 
 export const configStore = writable<AppConfig>(initialConfig);
 
@@ -77,7 +77,7 @@ configStore.subscribe((value) => {
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = window.setTimeout(async () => {
     try {
-      await chrome.storage.local.set({config: value});
+      await chrome.storage.local.set({ config: value });
     } catch (e) {
       console.error(e);
     }
@@ -86,10 +86,10 @@ configStore.subscribe((value) => {
 
 export const loadConfig = async () => {
   try {
-    const data = await chrome.storage.local.get("config");
-    if (data && data.config) {
+    const data = await chrome.storage.local.get('config');
+    if (data?.config) {
       const saved = data.config as Partial<AppConfig>;
-      configStore.update(current => ({...current, ...saved}));
+      configStore.update((current) => ({ ...current, ...saved }));
     }
   } catch (e) {
     console.error(e);
@@ -99,7 +99,7 @@ export const loadConfig = async () => {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && changes.config) {
     const nextConfig = changes.config.newValue as AppConfig;
-    configStore.update(current => {
+    configStore.update((current) => {
       if (JSON.stringify(current) !== JSON.stringify(nextConfig)) {
         return nextConfig;
       }
@@ -110,7 +110,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 
 export const resetConfig = async () => {
   try {
-    configStore.set({...initialConfig});
+    configStore.set({ ...initialConfig });
   } catch (e) {
     console.error(e);
   }

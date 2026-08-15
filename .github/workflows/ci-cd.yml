@@ -2,9 +2,9 @@ name: CI/CD & Chrome Web Store Publish
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [ opened, synchronize, reopened, closed ]
     branches:
-      - main
+      - master
 
 jobs:
   # 1. PR 단계: 버전 증가 여부 및 빌드 사전 검증
@@ -20,23 +20,23 @@ jobs:
         id: pr_version
         run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
-      - name: Checkout main branch
+      - name: Checkout master branch
         uses: actions/checkout@v4
         with:
-          ref: main
-          path: main-branch
+          ref: master
+          path: master-branch
 
-      - name: Get main version
-        id: main_version
-        run: echo "version=$(jq -r .version main-branch/package.json)" >> $GITHUB_OUTPUT
+      - name: Get master version
+        id: master_version
+        run: echo "version=$(jq -r .version master-branch/package.json)" >> $GITHUB_OUTPUT
 
       - name: Compare versions
         run: |
           PR_VER="${{ steps.pr_version.outputs.version }}"
-          MAIN_VER="${{ steps.main_version.outputs.version }}"
+          MASTER_VER="${{ steps.master_version.outputs.version }}"
           echo "PR Version: $PR_VER"
-          echo "Main Version: $MAIN_VER"
-          if [ "$PR_VER" == "$MAIN_VER" ]; then
+          echo "Master Version: $MASTER_VER"
+          if [ "$PR_VER" == "$MASTER_VER" ]; then
             echo "Error: package.json version must be updated before merging!"
             exit 1
           fi
@@ -53,7 +53,7 @@ jobs:
       - name: Test Build with Vite
         run: npm run build
 
-  # 2. main 병합 단계: Chrome Web Store 배포 + GitHub Release 배포
+  # 2. master 병합 단계: Chrome Web Store 배포 + GitHub Release 배포
   publish:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest

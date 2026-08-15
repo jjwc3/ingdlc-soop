@@ -1,11 +1,13 @@
 <script lang="ts">
-  import {onMount} from "svelte";
-  import {configStore, loadConfig} from "@/modules/configStore";
+  import { onMount } from 'svelte';
+
+  import { configStore, loadConfig } from '@/modules/configStore';
 
   // Images
-  const mujisungImg = new URL("../../assets/mujisung.png", import.meta.url).href;
-  const captureImg = new URL("../../assets/capture.png", import.meta.url).href;
-  const audioImg = new URL("../../assets/audio.png", import.meta.url).href;
+  const mujisungImg = new URL('../../assets/mujisung.png', import.meta.url)
+    .href;
+  const captureImg = new URL('../../assets/capture.png', import.meta.url).href;
+  const audioImg = new URL('../../assets/audio.png', import.meta.url).href;
 
   // Audio Compressor Variables
   let audioCtx: AudioContext | null = null;
@@ -16,24 +18,24 @@
 
   // SOOP 자체 Toast 사용하기
   function toast(text: string) {
-    const toast = document.getElementById("toastMessage");
-    toast.querySelector(".success").querySelector('p').innerHTML = text;
-    toast.style.display = "flex";
+    const toast = document.getElementById('toastMessage');
+    toast.querySelector('.success').querySelector('p').innerHTML = text;
+    toast.style.display = 'flex';
     setTimeout(() => {
-      toast.style.display = "none";
+      toast.style.display = 'none';
     }, 2000);
   }
 
   // 도배 버튼 눌렀을 때 Side Panel 열기
   async function mujisungFunc() {
-    await chrome.runtime.sendMessage({action: "INGDLC_SIDE"});
+    await chrome.runtime.sendMessage({ action: 'INGDLC_SIDE' });
   }
 
   // 방송 화면 캡쳐하기
   async function captureFunc() {
     const video = document.querySelector('video');
     if (!video) {
-      console.error("No Video");
+      console.error('No Video');
       return;
     }
 
@@ -55,13 +57,12 @@
 
       await chrome.runtime.sendMessage({
         action: 'INGDLC_DOWNLOAD_FILE',
-        payload: {url, filename}
+        payload: { url, filename },
       });
 
-      console.log("Captured");
-
+      console.log('Captured');
     } catch (error) {
-      console.error("Capture failed:", error);
+      console.error('Capture failed:', error);
     }
   }
 
@@ -89,20 +90,24 @@
       source.connect(compressor);
       compressor.connect(audioCtx.destination);
       acActive = true;
-      toast("볼륨 평준화가 켜졌습니다.");
+      toast('볼륨 평준화가 켜졌습니다.');
     } else {
       source.disconnect(compressor);
       compressor.disconnect(audioCtx.destination);
       source.connect(audioCtx.destination);
       acActive = false;
-      toast("볼륨 평준화가 꺼졌습니다.");
+      toast('볼륨 평준화가 꺼졌습니다.');
     }
   }
 
   // captureFunc() 첫 호출 시 경고문 띄우기
   function checkLaw() {
     if ($configStore.checkLawAlert.enabled) {
-      if (confirm("설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.")) {
+      if (
+        confirm(
+          '설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.',
+        )
+      ) {
         $configStore.checkLawAlert.enabled = 0;
         return true;
       } else return false;
@@ -114,26 +119,47 @@
   // 단축키 정의
   async function handleKeydown(e: KeyboardEvent) {
     if (!e.altKey) return;
-    if (['m', 'µ'].includes(e.key) && [1, 2].includes($configStore.mujisung.enabled)) await mujisungFunc();
-    if (['c', 'ç'].includes(e.key) && [1, 2].includes($configStore.capture.enabled)) await captureFunc();
-    if (['a', 'å'].includes(e.key) && [1, 2].includes($configStore.audioComp.enabled)) audioFunc();
+    if (
+      ['m', 'µ'].includes(e.key) &&
+      [1, 2].includes($configStore.mujisung.enabled)
+    )
+      await mujisungFunc();
+    if (
+      ['c', 'ç'].includes(e.key) &&
+      [1, 2].includes($configStore.capture.enabled)
+    )
+      await captureFunc();
+    if (
+      ['a', 'å'].includes(e.key) &&
+      [1, 2].includes($configStore.audioComp.enabled)
+    )
+      audioFunc();
   }
 
   // 자동 UP, 자정 지나면 자동 UP
   function likeClick() {
-    let streamerId = document.querySelector("#streamerNick").getAttribute("data-bj_id");
+    let streamerId = document
+      .querySelector('#streamerNick')
+      .getAttribute('data-bj_id');
 
-    if ($configStore.autoUp.custom.includes(streamerId) && !document.querySelector(".btn-login")) {
+    if (
+      $configStore.autoUp.custom.includes(streamerId) &&
+      !document.querySelector('.btn-login')
+    ) {
       const date = new Date();
-      const time = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+      const time =
+        date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
 
       let interval = setInterval(() => {
-        let button = document.querySelector("#like") as HTMLButtonElement;
-        if (document.querySelector(".depend_item").style.display !== "none" && !button.classList.contains("on")) {
+        let button = document.querySelector('#like') as HTMLButtonElement;
+        if (
+          document.querySelector('.depend_item').style.display !== 'none' &&
+          !button.classList.contains('on')
+        ) {
           clearInterval(interval);
           button.click();
         }
-      }, 1000)
+      }, 1000);
       setTimeout(interval, (86400 - time) * 1000 + 2000);
     }
   }
@@ -141,16 +167,16 @@
   // 타임라인 클릭 시 복사
   function timelineCopy() {
     let interval = setInterval(() => {
-      let timelineList = document.querySelectorAll("#time");
+      let timelineList = document.querySelectorAll('#time');
       if (timelineList.length !== 0) {
         clearInterval(interval);
         timelineList.forEach((e) => {
-          e.parentElement.addEventListener("click", () => {
+          e.parentElement.addEventListener('click', () => {
             navigator.clipboard.writeText(e.innerHTML);
-            toast("복사되었습니다.");
-          })
-          e.parentElement.style.cursor = "pointer";
-        })
+            toast('복사되었습니다.');
+          });
+          e.parentElement.style.cursor = 'pointer';
+        });
       }
     }, 1000);
   }
@@ -163,9 +189,7 @@
   configStore.subscribe(($config) => {
     if (Array.isArray($config.blockUser?.list)) {
       blockSet = new Set(
-          $config.blockUser.list
-              .map(name => name.trim())
-              .filter(Boolean)
+        $config.blockUser.list.map((name) => name.trim()).filter(Boolean),
       );
     }
     currentBlockGrade = Number($config.blockGrade?.enabled || 0);
@@ -179,43 +203,46 @@
     const mujisungMatch = message.match(mujisungRegex);
     if (mujisungMatch) {
       const mujisungUnit = mujisungMatch[1].trim();
-      if (emojiRegex.test(mujisungUnit) && !$configStore.mujisung.exception.includes(mujisungUnit) && !$configStore.mujisung.fromChat.includes(mujisungUnit)) {
-        configStore.update(current => ({
+      if (
+        emojiRegex.test(mujisungUnit) &&
+        !$configStore.mujisung.exception.includes(mujisungUnit) &&
+        !$configStore.mujisung.fromChat.includes(mujisungUnit)
+      ) {
+        configStore.update((current) => ({
           ...current,
           mujisung: {
             ...current.mujisung,
-            fromChat: [...current.mujisung.fromChat, mujisungUnit]
-          }
-        }))
+            fromChat: [...current.mujisung.fromChat, mujisungUnit],
+          },
+        }));
       }
     }
   }
 
   // 채팅 숨기기 관리 함수
   function processNode(node: Node) {
-
     if (!(node instanceof HTMLElement)) return;
     if (node.dataset.ingdlcProcessed) return;
-    const chatItem = node.className === "chatting-list-item" ? node : none;
+    const chatItem = node.className === 'chatting-list-item' ? node : none;
     if (!chatItem) return;
-    node.dataset.ingdlcProcessed = "true";
+    node.dataset.ingdlcProcessed = 'true';
 
     if (chatItem instanceof HTMLElement) {
       // const userElement = chatItem.querySelector(".username").firstElementChild;
-      const userElement = chatItem.querySelector("button");
+      const userElement = chatItem.querySelector('button');
       if (userElement instanceof HTMLElement) {
-        const userNick = userElement.getAttribute("user_nick") || "";
-        const userGrade = userElement.getAttribute("grade") || "";
+        const userNick = userElement.getAttribute('user_nick') || '';
+        const userGrade = userElement.getAttribute('grade') || '';
 
         const isUserBlocked = blockSet.has(userNick);
         const isGradeBlocked =
-            (currentBlockGrade >= 1 && userGrade === "user") ||
-            (currentBlockGrade >= 2 && userGrade === "fan");
+          (currentBlockGrade >= 1 && userGrade === 'user') ||
+          (currentBlockGrade >= 2 && userGrade === 'fan');
 
         if (isUserBlocked || isGradeBlocked) {
-          chatItem.style.display = "none";
-        } else if (node.querySelector(".msg")) {
-          mujisungFromChat(node.querySelector(".msg").innerHTML);
+          chatItem.style.display = 'none';
+        } else if (node.querySelector('.msg')) {
+          mujisungFromChat(node.querySelector('.msg').innerHTML);
         }
       }
     }
@@ -223,20 +250,20 @@
 
   // 버튼으로 유저 차단하기
   function addBlock(node) {
-    const nick = node.getAttribute("user_nick");
+    const nick = node.getAttribute('user_nick');
 
-    const blockUl = document.createElement("ul");
-    blockUl.className = "menu-list";
-    const blockLi = document.createElement("li");
-    blockLi.className = "";
-    const blockButton = document.createElement("button");
-    blockButton.type = "button";
-    blockButton.id = "ingdlc-blockUser";
-    blockButton.innerHTML = "유저 차단하기";
-    blockButton.addEventListener("click", () => {
+    const blockUl = document.createElement('ul');
+    blockUl.className = 'menu-list';
+    const blockLi = document.createElement('li');
+    blockLi.className = '';
+    const blockButton = document.createElement('button');
+    blockButton.type = 'button';
+    blockButton.id = 'ingdlc-blockUser';
+    blockButton.innerHTML = '유저 차단하기';
+    blockButton.addEventListener('click', () => {
       configStore.update((current) => {
         if (current.blockUser.list.includes(nick)) {
-          toast("이미 차단된 유저입니다.");
+          toast('이미 차단된 유저입니다.');
           return current;
         }
         toast(`"${nick}"을 차단하였습니다.`);
@@ -244,27 +271,27 @@
           ...current,
           blockUser: {
             ...current.blockUser,
-            list: [...current.blockUser.list, nick]
-          }
-        }
-      })
+            list: [...current.blockUser.list, nick],
+          },
+        };
+      });
       node.remove();
-    })
+    });
     blockLi.appendChild(blockButton);
     blockUl.appendChild(blockLi);
 
-    node.querySelector(".btn-close").before(blockUl);
+    node.querySelector('.btn-close').before(blockUl);
   }
 
   // 현재 방송 중인지 확인하고, 방송 중이 아니라면 방송 시작 시 새로고침하기
   async function reloadWhenLive() {
     if ($configStore.reload.enabled === 1 && !onInterval) {
-      const userId = document.getElementById("streamerNick").dataset.bj_id;
+      const userId = document.getElementById('streamerNick').dataset.bj_id;
       const url = `https://chapi.sooplive.com/api/${userId}/station`;
       const res = await (await fetch(url)).json();
       if (res.broad === null) {
         onInterval = true;
-        toast("방송이 시작되면 새로고침합니다.");
+        toast('방송이 시작되면 새로고침합니다.');
         setInterval(async () => {
           const response = await (await fetch(url)).json();
           if (response.broad) {
@@ -283,7 +310,7 @@
       video.addEventListener('timeupdate', async () => {
         if (video.currentTime === 0) await reloadWhenLive();
       });
-    }, 1000)
+    }, 1000);
   }
 
   // 영상 광고 자동 SKIP
@@ -292,9 +319,14 @@
     setTimeout(() => {
       const interval = setInterval(() => {
         try {
-          const adVideo: HTMLVideoElement = document.querySelector("#da_video");
-          const button: HTMLButtonElement = document.querySelector("#da_btn_skip");
-          if (adVideo && button.style.display !== "none" && intervalCount <= 30) {
+          const adVideo: HTMLVideoElement = document.querySelector('#da_video');
+          const button: HTMLButtonElement =
+            document.querySelector('#da_btn_skip');
+          if (
+            adVideo &&
+            button.style.display !== 'none' &&
+            intervalCount <= 30
+          ) {
             button.click();
             intervalCount += 1;
           } else {
@@ -303,7 +335,7 @@
         } catch (e) {
           console.log(e);
         }
-      }, 500)
+      }, 500);
     }, 5000);
   }
 
@@ -355,7 +387,7 @@
     await loadConfig();
     const events = ['cut', 'copy', 'paste'];
     const preventStop = (e: Event) => e.stopPropagation();
-    events.forEach(evt => document.addEventListener(evt, preventStop, true));
+    events.forEach((evt) => document.addEventListener(evt, preventStop, true));
     window.addEventListener('keydown', handleKeydown);
 
     likeClick();
@@ -366,35 +398,44 @@
 
     // setTimeout(recordVideo, 5000)
 
-
     // 채팅 차단 MutationObserver
     const chatListObserver = new MutationObserver((mutations) => {
-      mutations.forEach(m => m.addedNodes.forEach(processNode));
-    })
-    chatListObserver.observe(document.getElementById("chat_area"), {childList: true, subtree: true});
+      mutations.forEach((m) => m.addedNodes.forEach(processNode));
+    });
+    chatListObserver.observe(document.getElementById('chat_area'), {
+      childList: true,
+      subtree: true,
+    });
 
     // 채팅 차단 버튼 생성 MutationObserver
     const contextMenuObserver = new MutationObserver((mutations) => {
-      mutations.forEach(m => m.addedNodes.forEach((node) => {
-        if (node instanceof HTMLElement && node.id === "contextChatMenu") {
-          addBlock(node);
-        }
-      }))
-    })
-    contextMenuObserver.observe(document.getElementById("chatbox"), {childList: true, subtree: false});
+      mutations.forEach((m) =>
+        m.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement && node.id === 'contextChatMenu') {
+            addBlock(node);
+          }
+        }),
+      );
+    });
+    contextMenuObserver.observe(document.getElementById('chatbox'), {
+      childList: true,
+      subtree: false,
+    });
 
     return () => {
-      events.forEach(evt => document.removeEventListener(evt, preventStop, true));
+      events.forEach((evt) =>
+        document.removeEventListener(evt, preventStop, true),
+      );
       window.removeEventListener('keydown', handleKeydown);
       chatListObserver.disconnect();
       contextMenuObserver.disconnect();
-      configStore.update(current => ({
+      configStore.update((current) => ({
         ...current,
         mujisung: {
           ...current.mujisung,
-          fromChat: []
-        }
-      }))
+          fromChat: [],
+        },
+      }));
     };
   });
 </script>
@@ -402,7 +443,7 @@
 {#if $configStore.mujisung.enabled === 2}
   <li id="INGDLC-MUJISUNG-LI">
     <button onclick={() => mujisungFunc()}>
-      <img src={mujisungImg} alt="도배 도우미 열기"/>
+      <img src={mujisungImg} alt="도배 도우미 열기" />
     </button>
   </li>
 {/if}
@@ -410,7 +451,7 @@
 {#if $configStore.capture.enabled === 2}
   <li id="INGDLC-CAPTURE-LI">
     <button onclick={() => captureFunc()}>
-      <img src={captureImg} alt="화면 캡쳐"/>
+      <img src={captureImg} alt="화면 캡쳐" />
     </button>
   </li>
 {/if}
@@ -418,7 +459,11 @@
 {#if $configStore.audioComp.enabled === 2}
   <li id="INGDLC-COMP-LI">
     <button onclick={() => audioFunc()}>
-      <img src={audioImg} alt="음량 자동 조절" class={acActive ? "active-filter" : ""}/>
+      <img
+        src={audioImg}
+        alt="음량 자동 조절"
+        class={acActive ? 'active-filter' : ''}
+      />
     </button>
   </li>
 {/if}

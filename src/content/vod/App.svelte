@@ -1,11 +1,13 @@
 <script lang="ts">
-  import {onMount} from "svelte";
-  import {configStore, loadConfig} from "@/modules/configStore";
+  import { onMount } from 'svelte';
+
+  import { configStore, loadConfig } from '@/modules/configStore';
 
   // Images
-  const downloadImg = new URL("../../assets/download.png", import.meta.url).href;
-  const audioImg = new URL("../../assets/audio.png", import.meta.url).href;
-  const captureImg = new URL("../../assets/capture.png", import.meta.url).href;
+  const downloadImg = new URL('../../assets/download.png', import.meta.url)
+    .href;
+  const audioImg = new URL('../../assets/audio.png', import.meta.url).href;
+  const captureImg = new URL('../../assets/capture.png', import.meta.url).href;
 
   // Audio Compressor Variables
   let audioCtx: AudioContext | null = null;
@@ -18,16 +20,16 @@
 
   // SOOP 자체 Toast 사용하기
   function toast(text: string) {
-    const toast: HTMLElement = document.getElementById("toastMessage");
-    const div = document.createElement("div");
-    div.id = "INGDLC-TOAST";
-    const p = document.createElement("p");
+    const toast: HTMLElement = document.getElementById('toastMessage');
+    const div = document.createElement('div');
+    div.id = 'INGDLC-TOAST';
+    const p = document.createElement('p');
     p.innerHTML = text;
     div.appendChild(p);
     toast.appendChild(div);
 
     setTimeout(() => {
-      toast.querySelector("#INGDLC-TOAST").remove();
+      toast.querySelector('#INGDLC-TOAST').remove();
     }, 2000);
   }
 
@@ -35,7 +37,7 @@
   async function captureFunc() {
     const video = document.querySelector('video');
     if (!video) {
-      console.error("No Video");
+      console.error('No Video');
       return;
     }
 
@@ -57,29 +59,31 @@
 
       await chrome.runtime.sendMessage({
         action: 'INGDLC_DOWNLOAD_FILE',
-        payload: {url, filename}
+        payload: { url, filename },
       });
 
-      console.log("Captured");
-
+      console.log('Captured');
     } catch (error) {
-      console.error("Capture failed:", error);
+      console.error('Capture failed:', error);
     }
   }
 
   async function downloadFunc() {
-    const vodTitle: string = (new Date().getTime()) + document.querySelector(".broadcast_title").innerHTML.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣 \-_]/g, "");
-
+    const vodTitle: string =
+      new Date().getTime() +
+      document
+        .querySelector('.broadcast_title')
+        .innerHTML.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣 \-_]/g, '');
 
     if (vodURL) {
       await chrome.runtime.sendMessage({
         action: 'INGDLC_DOWNLOAD_VOD',
-        payload: {vodURL, vodTitle}
+        payload: { vodURL, vodTitle },
       });
-      toast("사이드 패널을 확인해주세요.");
+      toast('사이드 패널을 확인해주세요.');
       downloadActive = false;
     } else {
-      toast("영상이 로드되지 않았습니다. 영상을 재생해주세요.");
+      toast('영상이 로드되지 않았습니다. 영상을 재생해주세요.');
     }
   }
 
@@ -107,20 +111,24 @@
       source.connect(compressor);
       compressor.connect(audioCtx.destination);
       acActive = true;
-      toast("볼륨 평준화가 켜졌습니다.");
+      toast('볼륨 평준화가 켜졌습니다.');
     } else {
       source.disconnect(compressor);
       compressor.disconnect(audioCtx.destination);
       source.connect(audioCtx.destination);
       acActive = false;
-      toast("볼륨 평준화가 꺼졌습니다.");
+      toast('볼륨 평준화가 꺼졌습니다.');
     }
   }
 
   // captureFunc() 첫 호출 시 경고문 띄우기
   function checkLaw() {
     if ($configStore.checkLawAlert.enabled) {
-      if (confirm("설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.")) {
+      if (
+        confirm(
+          '설정한 화질대로 캡쳐됩니다. 최대화질로 설정 후 캡쳐해주세요.\n\n스트리머·저작권자의 동의 없이 녹화된 영상 및 캡쳐 이미지를 공유하는 경우, 그 책임은 전적으로 사용자에게 있습니다.\n\n이를 이해하고 동의하십니까?\n\n이 창은 최초 동의 후 나타나지 않습니다.',
+        )
+      ) {
         $configStore.checkLawAlert.enabled = 0;
         return true;
       } else return false;
@@ -132,74 +140,107 @@
   onMount(async () => {
     await loadConfig();
     chrome.runtime.onMessage.addListener(async (request) => {
-      if (request.action === "INGDLC_VOD") {
+      if (request.action === 'INGDLC_VOD') {
         if (
-            (document.getElementsByClassName("video_edit")[0] && !document.getElementsByClassName("video_edit")[0]?.className.includes("off"))
-            || (document.querySelector(".btn_normal") && (document.querySelector(".btn_normal").innerHTML.includes("스토리") || document.querySelector(".btn_normal").innerHTML.includes("Story")))
+          (document.getElementsByClassName('video_edit')[0] &&
+            !document
+              .getElementsByClassName('video_edit')[0]
+              ?.className.includes('off')) ||
+          (document.querySelector('.btn_normal') &&
+            (document
+              .querySelector('.btn_normal')
+              .innerHTML.includes('스토리') ||
+              document
+                .querySelector('.btn_normal')
+                .innerHTML.includes('Story')))
         ) {
           try {
-            document.querySelector('#INGDLC-DOWNLOAD-LI').style.display = 'none';
+            document.querySelector('#INGDLC-DOWNLOAD-LI').style.display =
+              'none';
           } catch (e) {
-            console.log("Not loaded");
+            console.log('Not loaded');
           }
           return;
         }
         vodURL = request.url;
         downloadActive = true;
       }
-    })
+    });
   });
 </script>
 
-{#if location.href.includes("catch")}
-
+{#if location.href.includes('catch')}
   {#if $configStore.download.enabled === 2}
     <button onclick={() => downloadFunc()} tip="클립 다운로드">
       클립 다운로드
-      <img src="{downloadImg}" style="width: 24px;" alt="클립 다운로드">
+      <img src={downloadImg} style="width: 24px;" alt="클립 다운로드" />
     </button>
   {/if}
 
   {#if $configStore.audioComp.enabled === 2}
     <button onclick={() => audioFunc()} tip="음량 자동 조절">
       음량 자동 조절
-      <img src="{audioImg}" style="width: 24px;" class={acActive ? "active-filter" : ""} alt="음량 자동 조절">
+      <img
+        src={audioImg}
+        style="width: 24px;"
+        class={acActive ? 'active-filter' : ''}
+        alt="음량 자동 조절"
+      />
     </button>
   {/if}
 
   {#if $configStore.download.enabled === 2}
     <button onclick={async () => await captureFunc()} tip="화면 캡쳐">
       화면 캡쳐
-      <img src="{captureImg}" style="width: 24px;" alt="화면 캡쳐">
+      <img src={captureImg} style="width: 24px;" alt="화면 캡쳐" />
     </button>
   {/if}
-
 {:else}
-
   {#if $configStore.download.enabled === 2}
     <li id="INGDLC-DOWNLOAD-LI" style="display: flex; gap: 6px;">
-      <button onclick={() => downloadFunc()} style="justify-content: center" tip="클립 다운로드">
-        <img src="{downloadImg}" style="width: 24px;" class={downloadActive ? "active-filter" : ""} alt="클립 다운로드">
+      <button
+        onclick={() => downloadFunc()}
+        style="justify-content: center"
+        tip="클립 다운로드"
+      >
+        <img
+          src={downloadImg}
+          style="width: 24px;"
+          class={downloadActive ? 'active-filter' : ''}
+          alt="클립 다운로드"
+        />
       </button>
     </li>
   {/if}
 
   {#if $configStore.audioComp.enabled === 2}
     <li id="INGDLC-AUDIO-LI" style="display: flex; gap: 6px;">
-      <button onclick={() => audioFunc()} style="justify-content: center" tip="음량 자동 조절">
-        <img src="{audioImg}" style="width: 24px;" class={acActive ? "active-filter" : ""} alt="음량 자동 조절">
+      <button
+        onclick={() => audioFunc()}
+        style="justify-content: center"
+        tip="음량 자동 조절"
+      >
+        <img
+          src={audioImg}
+          style="width: 24px;"
+          class={acActive ? 'active-filter' : ''}
+          alt="음량 자동 조절"
+        />
       </button>
     </li>
   {/if}
 
   {#if $configStore.download.enabled === 2}
     <li id="INGDLC-CAPTURE-LI" style="display: flex; gap: 6px;">
-      <button onclick={async () => await captureFunc()} style="justify-content: center" tip="화면 캡쳐">
-        <img src="{captureImg}" style="width: 24px;" alt="화면 캡쳐">
+      <button
+        onclick={async () => await captureFunc()}
+        style="justify-content: center"
+        tip="화면 캡쳐"
+      >
+        <img src={captureImg} style="width: 24px;" alt="화면 캡쳐" />
       </button>
     </li>
   {/if}
-
 {/if}
 
 <style>
