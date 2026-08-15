@@ -1,10 +1,14 @@
 <script lang="ts">
+  import ElementTitle from '@/components/ElementTitle.svelte';
+  import TextInput from '@/components/TextInput.svelte';
+
   let {
     title = '',
     subtitle = '',
     placeHolder = '',
-    configList = $bindable([] as string[]),
-    showErrorModal = $bindable(),
+    configList = $bindable<string[]>([]),
+    // eslint-disable-next-line no-useless-assignment
+    showErrorModal = $bindable<boolean>(),
   } = $props();
 
   let input = $state('');
@@ -26,29 +30,13 @@
 </script>
 
 <div class="relative mb-4 last:mb-0">
-  <div class="mb-1.5 flex flex-row items-center">
-    <span class="flex items-center text-sm font-semibold"># {title}</span>
-    {#if subtitle}
-      <span class="ml-2 text-xs font-bold text-slate-500">{subtitle}</span>
-    {/if}
-  </div>
+  <ElementTitle {title} {subtitle} />
 
   <div class="mb-2 flex flex-row gap-1">
     <div
       class="relative flex flex-1 items-center overflow-hidden rounded-lg bg-slate-200 p-1 transition-all focus-within:ring-2 focus-within:ring-blue-400"
     >
-      <input
-        type="text"
-        placeholder={placeHolder}
-        class="w-full border-none bg-transparent px-2 py-1.5 text-xs font-bold text-slate-700 placeholder:text-slate-400 focus:ring-0"
-        bind:value={input}
-        onkeydown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            addInput();
-          }
-        }}
-      />
+      <TextInput {placeHolder} bind:value={input} onEnter={addInput} />
     </div>
 
     <button
@@ -78,7 +66,7 @@
     class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner"
   >
     <ul class="custom-scrollbar h-32 divide-y divide-slate-50 overflow-y-auto">
-      {#each configList as el, i}
+      {#each configList as el, i (i)}
         <li
           class="group flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-slate-50"
         >
