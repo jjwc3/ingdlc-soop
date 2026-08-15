@@ -2,7 +2,7 @@ import { defineManifest } from '@crxjs/vite-plugin';
 
 import pkg from './package.json';
 
-export default defineManifest( {
+export default defineManifest({
   manifest_version: 3,
   name: 'INGDLC for SOOP',
   version: pkg.version,
@@ -24,23 +24,23 @@ export default defineManifest( {
   },
   content_scripts: [
     {
-      js: [ 'src/content/live/index.ts' ],
-      matches: [ 'https://play.sooplive.com/*' ],
+      js: ['src/content/live/index.ts'],
+      matches: ['https://play.sooplive.com/*'],
     },
     {
-      js: [ 'src/content/vod/index.ts' ],
-      matches: [ 'https://vod.sooplive.com/*' ],
+      js: ['src/content/vod/index.ts'],
+      matches: ['https://vod.sooplive.com/*'],
     },
   ],
-  permissions: [ 'sidePanel', 'storage', 'downloads', 'webRequest' ],
+  permissions: ['sidePanel', 'storage', 'downloads', 'webRequest'],
   web_accessible_resources: [
     {
-      resources: [ 'src/assets/*.png', 'src/assets/*.svg' ],
-      matches: [ '<all_urls>' ],
+      resources: ['src/assets/*.png', 'src/assets/*.svg'],
+      matches: ['<all_urls>'],
     },
   ],
-  host_permissions: [ 'https://*.sooplive.com/*' ],
+  host_permissions: ['https://*.sooplive.com/*'],
   side_panel: {
     default_path: 'src/sidepanel/index.html',
   },
-} );
+});
