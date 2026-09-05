@@ -42,17 +42,14 @@ jobs:
             exit 1
           fi
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'npm'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Test Build with Vite
-        run: npm run build
+        run: bun run build
 
   # 2. master 병합 단계: Chrome Web Store 배포 + GitHub Release 배포
   publish:
@@ -72,17 +69,14 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'npm'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Build with Vite
-        run: npm run build
+        run: bun run build
 
       - name: Create Extension Zip
         run: |
@@ -92,8 +86,8 @@ jobs:
 
       - name: Upload & Publish to Chrome Web Store
         run: |
-          npx chrome-webstore-upload-cli upload --source extension.zip
-          npx chrome-webstore-upload-cli publish
+          bunx chrome-webstore-upload-cli upload --source extension.zip
+          bunx chrome-webstore-upload-cli publish
         env:
           EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}

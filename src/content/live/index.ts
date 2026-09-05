@@ -1,47 +1,30 @@
+/**
+ * Live-page toolbar (mujisung / capture / audio compressor) and chat filtering.
+ *
+ * Top frame only. The player toolbar is rendered asynchronously, so the mount
+ * waits for `.game_point` and inserts the root right after it; `display:
+ * contents` keeps the injected wrapper out of the page's own flex layout.
+ */
+
 import { mount } from 'svelte';
 
+import { waitForElement } from '@/lib/wait-for-element';
+
 import App from './App.svelte';
-import './removeAd.css';
+import '../content.css';
 
 async function init() {
   const targetAnchor = await waitForElement('.game_point');
+  if (!targetAnchor) return;
+  if (document.querySelector('[data-ingdlc-root="live"]')) return;
 
-  if (targetAnchor && !document.getElementById('INGDLC-MOUNT-ROOT')) {
-    const container = document.createElement('div');
-    container.id = 'INGDLC-MOUNT-ROOT';
-    container.style.display = 'contents';
+  const container = document.createElement('div');
+  container.dataset.ingdlcRoot = 'live';
+  container.style.display = 'contents';
 
-    targetAnchor.after(container);
+  targetAnchor.after(container);
 
-    mount(App, {
-      target: container,
-    });
-  }
+  mount(App, { target: container });
 }
 
-function waitForElement(selector: string): Promise<Element | null> {
-  return new Promise((resolve) => {
-    const el = document.querySelector(selector);
-    if (el) return resolve(el);
-
-    const observer = new MutationObserver(() => {
-      const target = document.querySelector(selector);
-      if (target) {
-        observer.disconnect();
-        resolve(target);
-      }
-    });
-
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
-
-    setTimeout(() => {
-      observer.disconnect();
-      resolve(null);
-    }, 10000);
-  });
-}
-
-await init();
+void init();

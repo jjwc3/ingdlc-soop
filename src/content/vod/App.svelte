@@ -22,14 +22,14 @@
   function toast(text: string) {
     const toast: HTMLElement = document.getElementById('toastMessage');
     const div = document.createElement('div');
-    div.id = 'INGDLC-TOAST';
+    div.id = 'IDC_toast';
     const p = document.createElement('p');
     p.innerHTML = text;
     div.appendChild(p);
     toast.appendChild(div);
 
     setTimeout(() => {
-      toast.querySelector('#INGDLC-TOAST').remove();
+      toast.querySelector('#IDC_toast').remove();
     }, 2000);
   }
 
@@ -155,8 +155,7 @@
                 .innerHTML.includes('Story')))
         ) {
           try {
-            document.querySelector('#INGDLC-DOWNLOAD-LI').style.display =
-              'none';
+            document.querySelector('#IDC_download').style.display = 'none';
           } catch {
             console.log('Not loaded');
           }
@@ -183,7 +182,7 @@
       <img
         src={audioImg}
         style="width: 24px;"
-        class={acActive ? 'active-filter' : ''}
+        class={acActive ? 'IDC_active' : ''}
         alt="음량 자동 조절"
       />
     </button>
@@ -197,7 +196,7 @@
   {/if}
 {:else}
   {#if $configStore.download.enabled === 2}
-    <li id="INGDLC-DOWNLOAD-LI" style="display: flex; gap: 6px;">
+    <li id="IDC_download" style="display: flex; gap: 6px;">
       <button
         onclick={() => downloadFunc()}
         style="justify-content: center"
@@ -206,7 +205,7 @@
         <img
           src={downloadImg}
           style="width: 24px;"
-          class={downloadActive ? 'active-filter' : ''}
+          class={downloadActive ? 'IDC_active' : ''}
           alt="클립 다운로드"
         />
       </button>
@@ -214,7 +213,7 @@
   {/if}
 
   {#if $configStore.audioComp.enabled === 2}
-    <li id="INGDLC-AUDIO-LI" style="display: flex; gap: 6px;">
+    <li id="IDC_audio" style="display: flex; gap: 6px;">
       <button
         onclick={() => audioFunc()}
         style="justify-content: center"
@@ -223,7 +222,7 @@
         <img
           src={audioImg}
           style="width: 24px;"
-          class={acActive ? 'active-filter' : ''}
+          class={acActive ? 'IDC_active' : ''}
           alt="음량 자동 조절"
         />
       </button>
@@ -231,7 +230,7 @@
   {/if}
 
   {#if $configStore.download.enabled === 2}
-    <li id="INGDLC-CAPTURE-LI" style="display: flex; gap: 6px;">
+    <li id="IDC_capture" style="display: flex; gap: 6px;">
       <button
         onclick={async () => await captureFunc()}
         style="justify-content: center"
@@ -260,7 +259,7 @@
     width: 32px;
   }
 
-  .active-filter {
+  .IDC_active {
     filter: opacity(0.5) drop-shadow(0 0 0 #7398ff) saturate(500%);
   }
 </style>

@@ -20,7 +20,7 @@ export default defineConfig([
       'dist/',
       'node_modules/',
       'release/',
-      'package-lock.json',
+      'bun.lock',
       '**/.DS_Store',
     ],
   },

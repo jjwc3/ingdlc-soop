@@ -1,0 +1,16 @@
+/*
+ * Styles injected into SOOP pages by the content scripts.
+ *
+ * Kept in one file instead of one per entry point: CRXJS fails to import a
+ * manifest `css` entry that points into `public/` in dev mode ("Cannot import
+ * non-asset file"). Importing this from a JS entry point instead makes CRXJS
+ * add it to the manifest `css` array itself, which works in dev and build.
+ *
+ * Selectors the extension adds are prefixed `IDC_`; bare selectors below
+ * (`.chat_banner`) belong to the page and are only being overridden.
+ */
+
+.chat_banner,
+.chat_banner2 {
+  display: none !important;
+}

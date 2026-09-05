@@ -116,30 +116,8 @@
   style="min-width:400px; max-width:400px"
   class=" bg-slate-50 px-2 py-4 text-slate-900"
 >
-  <Header {openSide} />
-  <!--  <header>-->
-  <!--    <h1 class="mt-3 mb-1 text-center text-2xl font-bold">INGDLC for SOOP</h1>-->
+  <Header title="INGDLC for SOOP" {openSide} />
 
-  <!--    <div class="text-center text-xs text-slate-500">-->
-  <!--      Ver.<span>{chrome.runtime.getManifest().version}</span>-->
-  <!--    </div>-->
-
-  <!--    <div class="absolute top-2 left-2">-->
-  <!--      <button-->
-  <!--        class="text-xs text-slate-400 transition-all duration-300 ease-in-out hover:cursor-pointer hover:font-bold hover:text-slate-600"-->
-  <!--        onclick={openSide}>도배 도우미 열기</button-->
-  <!--      >-->
-  <!--    </div>-->
-
-  <!--    <div class="absolute top-2 right-2">-->
-  <!--      <a-->
-  <!--        href="index.html"-->
-  <!--        target="_blank"-->
-  <!--        class="text-xs text-slate-400 transition-all duration-300 ease-in-out hover:cursor-pointer hover:font-bold hover:text-slate-600"-->
-  <!--        >새 창에서 열기</a-->
-  <!--      >-->
-  <!--    </div>-->
-  <!--  </header>-->
   <hr class="mx-7 my-3 border-slate-300" />
   <footer
     class="flex w-full items-center justify-between gap-4 px-7 text-sm font-bold"
@@ -262,22 +240,6 @@
         ]}
         bind:value={$configStore.blockGrade.enabled}
       />
-      <div class="mb-4 last:mb-0">
-        <div class="mb-1.5 flex flex-row items-center">
-          <span class="flex items-center text-sm font-semibold"
-            ># 클립 다운로드 경로 설정</span
-          >
-        </div>
-        <div
-          class="relative flex w-full items-center overflow-hidden rounded-lg bg-slate-200 p-1"
-        >
-          <input
-            class="relative z-10 flex-1 p-2 text-sm font-bold text-slate-700 transition-colors duration-200"
-            bind:value={$configStore.download.path}
-            placeholder="경로 입력"
-          />
-        </div>
-      </div>
     </div>
   </div>
 

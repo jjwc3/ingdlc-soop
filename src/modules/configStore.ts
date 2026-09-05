@@ -1,117 +1,82 @@
+/**
+ * Reactive wrapper around the settings blob in `config`.
+ *
+ * Types and defaults live in `config.ts` so non-UI contexts can read settings
+ * without importing svelte; this file only adds the store, the debounced write
+ * and cross-context synchronisation. Lists are not part of `config` — see
+ * `listStore.ts` and the domain stores built on it.
+ */
+
 import { writable } from 'svelte/store';
 
-export interface AppConfig {
-  mujisung: {
-    enabled: 0 | 1 | 2;
-    list: string[][];
-    custom: string[];
-    fromChat: string[];
-    exception: string[];
-  };
-  capture: {
-    enabled: 0 | 1 | 2;
-  };
-  checkLawAlert: {
-    enabled: 0 | 1;
-  };
-  download: {
-    enabled: 0 | 1 | 2;
-    path: string;
-  };
-  autoUp: {
-    custom: string[];
-  };
-  reload: {
-    enabled: 0 | 1;
-  };
-  audioComp: {
-    enabled: 0 | 1 | 2;
-  };
-  blockUser: {
-    list: string[];
-  };
-  blockGrade: {
-    enabled: 0 | 1;
-  };
-}
+import { autoUpStore } from './autoUpStore';
+import { blockUserStore } from './blockStore';
+import { CONFIG_KEY, initialConfig, type AppConfig } from './config';
+import {
+  mujisungCustomStore,
+  mujisungFromChatStore,
+  mujisungListStore,
+} from './mujisungStore';
 
-const initialConfig: AppConfig = {
-  mujisung: {
-    enabled: 2,
-    list: [],
-    custom: [],
-    fromChat: [],
-    exception: ['규칙', '채팅금지'],
-  },
-  capture: {
-    enabled: 2,
-  },
-  checkLawAlert: {
-    enabled: 1,
-  },
-  download: {
-    enabled: 2,
-    path: '',
-  },
-  autoUp: {
-    custom: ['nanajam'],
-  },
-  reload: {
-    enabled: 1,
-  },
-  audioComp: {
-    enabled: 2,
-  },
-  blockUser: {
-    list: [],
-  },
-  blockGrade: {
-    enabled: 0,
-  },
-};
+export type { AppConfig } from './config';
 
-export const configStore = writable<AppConfig>(initialConfig);
+const WRITE_DEBOUNCE_MS = 300;
 
-let saveTimeout: number;
+export const configStore = writable<AppConfig>({ ...initialConfig });
+
+/** 최초 읽기가 끝나기 전에는 저장하지 않는다 (기본값으로 덮어쓰기 방지). */
+let loaded = false;
+let saveTimeout: ReturnType<typeof setTimeout> | undefined;
+
 configStore.subscribe((value) => {
+  if (!loaded) return;
   if (saveTimeout) clearTimeout(saveTimeout);
-  saveTimeout = window.setTimeout(async () => {
-    try {
-      await chrome.storage.local.set({ config: value });
-    } catch (e) {
-      console.error(e);
-    }
-  }, 300);
+  saveTimeout = setTimeout(() => {
+    chrome.storage.local
+      .set({ [CONFIG_KEY]: value })
+      .catch((e) => console.error(e));
+  }, WRITE_DEBOUNCE_MS);
 });
 
 export const loadConfig = async () => {
   try {
-    const data = await chrome.storage.local.get('config');
-    if (data?.config) {
-      const saved = data.config as Partial<AppConfig>;
-      configStore.update((current) => ({ ...current, ...saved }));
-    }
+    const data = await chrome.storage.local.get(CONFIG_KEY);
+    const saved = data?.[CONFIG_KEY] as Partial<AppConfig> | undefined;
+    if (saved) configStore.update((current) => ({ ...current, ...saved }));
   } catch (e) {
     console.error(e);
+  } finally {
+    loaded = true;
   }
 };
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === 'local' && changes.config) {
-    const nextConfig = changes.config.newValue as AppConfig;
-    configStore.update((current) => {
-      if (JSON.stringify(current) !== JSON.stringify(nextConfig)) {
-        return nextConfig;
-      }
-      return current;
-    });
-  }
+  if (areaName !== 'local' || !changes[CONFIG_KEY]) return;
+  const nextConfig = changes[CONFIG_KEY].newValue as AppConfig;
+  loaded = true;
+  configStore.update((current) =>
+    JSON.stringify(current) !== JSON.stringify(nextConfig)
+      ? nextConfig
+      : current,
+  );
 });
 
+const listStores = [
+  mujisungListStore,
+  mujisungCustomStore,
+  mujisungFromChatStore,
+  blockUserStore,
+  autoUpStore,
+];
+
+/** 설정과 모든 리스트를 한 번에 읽는다. 진입점 onMount에서 호출한다. */
+export const loadAll = async () => {
+  await Promise.all([loadConfig(), ...listStores.map((s) => s.load())]);
+};
+
+/** "설정 초기화" — 설정 블롭과 모든 리스트 키를 기본값으로 되돌린다. */
 export const resetConfig = async () => {
-  try {
-    configStore.set({ ...initialConfig });
-  } catch (e) {
-    console.error(e);
-  }
+  loaded = true;
+  configStore.set({ ...initialConfig });
+  await Promise.all(listStores.map((s) => s.reset()));
 };

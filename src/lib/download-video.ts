@@ -1,3 +1,11 @@
+/**
+ * HLS (m3u8) parsing and one-shot download.
+ *
+ * SOOP serves VOD/catch media as an HLS playlist, so a plain download link is
+ * not enough: the master playlist has to be resolved to a media playlist, every
+ * segment fetched with credentials, and the buffers concatenated client-side.
+ */
+
 export async function parseM3U8(
   m3u8Text: string,
   currentUrl: string,

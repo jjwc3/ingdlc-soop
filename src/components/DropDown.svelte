@@ -1,3 +1,12 @@
+<!--
+  One row of the mujisung search result list.
+
+  Not the counterpart of cafe's `Select.svelte`: this is not a form control but
+  a result row whose column layout depends on the entry type (`틱톡 or 노래` has
+  no separate song column, `커스텀`/`자동` entries have no song at all), and it
+  copies on mouseup so the search input keeps focus. A native `<select>` cannot
+  express either, hence the custom markup.
+-->
 <script lang="ts">
   interface DropDownProps {
     handleCopy: (text: string) => void;
