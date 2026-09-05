@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  import { configStore, loadConfig } from '@/modules/configStore';
+  import { autoUpStore } from '@/modules/autoUpStore';
+  import { blockUserStore } from '@/modules/blockStore';
+  import { configStore, loadAll } from '@/modules/configStore';
+  import { mujisungFromChatStore } from '@/modules/mujisungStore';
 
   // Images
   const mujisungImg = new URL('../../assets/mujisung.png', import.meta.url)
@@ -143,7 +146,7 @@
       .getAttribute('data-bj_id');
 
     if (
-      $configStore.autoUp.custom.includes(streamerId) &&
+      $autoUpStore.includes(streamerId) &&
       !document.querySelector('.btn-login')
     ) {
       const date = new Date();
@@ -185,13 +188,12 @@
   let blockSet = new Set<string>();
   let currentBlockGrade = 0;
 
-  // blockUser<String[]> --> Set<string>
+  // blockUser<string[]> --> Set<string>
+  blockUserStore.subscribe((list) => {
+    blockSet = new Set(list.map((name) => name.trim()).filter(Boolean));
+  });
+
   configStore.subscribe(($config) => {
-    if (Array.isArray($config.blockUser?.list)) {
-      blockSet = new Set(
-        $config.blockUser.list.map((name) => name.trim()).filter(Boolean),
-      );
-    }
     currentBlockGrade = Number($config.blockGrade?.enabled || 0);
   });
 
@@ -206,15 +208,9 @@
       if (
         emojiRegex.test(mujisungUnit) &&
         !$configStore.mujisung.exception.includes(mujisungUnit) &&
-        !$configStore.mujisung.fromChat.includes(mujisungUnit)
+        !$mujisungFromChatStore.includes(mujisungUnit)
       ) {
-        configStore.update((current) => ({
-          ...current,
-          mujisung: {
-            ...current.mujisung,
-            fromChat: [...current.mujisung.fromChat, mujisungUnit],
-          },
-        }));
+        mujisungFromChatStore.update((current) => [...current, mujisungUnit]);
       }
     }
   }
@@ -222,10 +218,10 @@
   // 채팅 숨기기 관리 함수
   function processNode(node: Node) {
     if (!(node instanceof HTMLElement)) return;
-    if (node.dataset.ingdlcProcessed) return;
+    if (node.dataset.idcProcessed) return;
     const chatItem = node.className === 'chatting-list-item' ? node : null;
     if (!chatItem) return;
-    node.dataset.ingdlcProcessed = 'true';
+    node.dataset.idcProcessed = 'true';
 
     if (chatItem instanceof HTMLElement) {
       // const userElement = chatItem.querySelector(".username").firstElementChild;
@@ -258,22 +254,16 @@
     blockLi.className = '';
     const blockButton = document.createElement('button');
     blockButton.type = 'button';
-    blockButton.id = 'ingdlc-blockUser';
+    blockButton.id = 'IDC_blockUser';
     blockButton.innerHTML = '유저 차단하기';
     blockButton.addEventListener('click', () => {
-      configStore.update((current) => {
-        if (current.blockUser.list.includes(nick)) {
+      blockUserStore.update((current) => {
+        if (current.includes(nick)) {
           toast('이미 차단된 유저입니다.');
           return current;
         }
         toast(`"${nick}"을 차단하였습니다.`);
-        return {
-          ...current,
-          blockUser: {
-            ...current.blockUser,
-            list: [...current.blockUser.list, nick],
-          },
-        };
+        return [...current, nick];
       });
       node.remove();
     });
@@ -384,7 +374,7 @@
 
   onMount(async () => {
     // 복붙 금지 해제
-    await loadConfig();
+    await loadAll();
     const events = ['cut', 'copy', 'paste'];
     const preventStop = (e: Event) => e.stopPropagation();
     events.forEach((evt) => document.addEventListener(evt, preventStop, true));
@@ -429,19 +419,13 @@
       window.removeEventListener('keydown', handleKeydown);
       chatListObserver.disconnect();
       contextMenuObserver.disconnect();
-      configStore.update((current) => ({
-        ...current,
-        mujisung: {
-          ...current.mujisung,
-          fromChat: [],
-        },
-      }));
+      mujisungFromChatStore.set([]);
     };
   });
 </script>
 
 {#if $configStore.mujisung.enabled === 2}
-  <li id="INGDLC-MUJISUNG-LI">
+  <li id="IDC_mujisung">
     <button onclick={() => mujisungFunc()}>
       <img src={mujisungImg} alt="도배 도우미 열기" />
     </button>
@@ -449,7 +433,7 @@
 {/if}
 
 {#if $configStore.capture.enabled === 2}
-  <li id="INGDLC-CAPTURE-LI">
+  <li id="IDC_capture">
     <button onclick={() => captureFunc()}>
       <img src={captureImg} alt="화면 캡쳐" />
     </button>
@@ -457,12 +441,12 @@
 {/if}
 
 {#if $configStore.audioComp.enabled === 2}
-  <li id="INGDLC-COMP-LI">
+  <li id="IDC_audio">
     <button onclick={() => audioFunc()}>
       <img
         src={audioImg}
         alt="음량 자동 조절"
-        class={acActive ? 'active-filter' : ''}
+        class={acActive ? 'IDC_active' : ''}
       />
     </button>
   </li>
@@ -485,7 +469,7 @@
     width: 32px;
   }
 
-  .active-filter {
+  .IDC_active {
     filter: opacity(0.5) drop-shadow(0 0 0 #7398ff) saturate(500%);
   }
 </style>

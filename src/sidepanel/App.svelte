@@ -9,8 +9,16 @@
   import InputAndAdd from '@/components/InputAndAdd.svelte';
   import Modal from '@/components/Modal.svelte';
   import TextInput from '@/components/TextInput.svelte';
-  import { configStore, loadConfig, resetConfig } from '@/modules/configStore';
-  import { startDownload } from '@/scripts/downloadVideo';
+  import { startDownload } from '@/lib/download-video';
+  import { autoUpStore } from '@/modules/autoUpStore';
+  import { blockUserStore } from '@/modules/blockStore';
+  import { configStore, loadAll, resetConfig } from '@/modules/configStore';
+  import {
+    mujisungCustomStore,
+    mujisungFromChatStore,
+    mujisungListStore,
+    type MujisungEntry,
+  } from '@/modules/mujisungStore';
 
   let showResetModal = $state(false);
   let showErrorModal = $state(false);
@@ -44,7 +52,7 @@
     ).json();
     const typeList = ['댄스', '틱톡 or 노래', '기타'];
 
-    let tempMujisung = [];
+    let tempMujisung: MujisungEntry[] = [];
     for (let type of typeList) {
       let songObject = fetchList[type];
       Object.keys(songObject).forEach((song) => {
@@ -56,22 +64,18 @@
       });
     }
 
-    configStore.update((current) => ({
-      ...current,
-      mujisung: {
-        ...current.mujisung,
-        list: tempMujisung,
-      },
-    }));
+    mujisungListStore.set(tempMujisung);
   }
 
   let mujisungFiltered = $derived.by(() => {
-    const fromChat = $configStore.mujisung.fromChat.slice(-3);
+    const fromChat = $mujisungFromChatStore.slice(-3);
     const mappedFromChat = fromChat.map((i) => ['자동', '자동', i]);
-    const list = $configStore.mujisung.list;
-    const custom = $configStore.mujisung.custom;
-    const mappedCustom = custom.map((i) => ['커스텀', '커스텀', i]);
-    const final = [...mappedFromChat, ...mappedCustom, ...list];
+    const mappedCustom = $mujisungCustomStore.map((i) => [
+      '커스텀',
+      '커스텀',
+      i,
+    ]);
+    const final = [...mappedFromChat, ...mappedCustom, ...$mujisungListStore];
     let query = mujisungQuery.trim().toLowerCase();
     if (!query) return final;
 
@@ -101,7 +105,7 @@
   }
 
   onMount(async () => {
-    await loadConfig();
+    await loadAll();
     await mujisungUpdate();
     chrome.runtime.sendMessage({ action: 'INGDLC_SIDE_DL_REQ' }, (response) => {
       if (response?.url) {
@@ -113,7 +117,7 @@
 </script>
 
 <div class="h-screen bg-slate-50 px-2 py-4 text-slate-900">
-  <Header />
+  <Header title="INGDLC for SOOP" />
 
   {#if showDownloadButton}
     <div
@@ -195,7 +199,7 @@
         title="커스텀 도배 리스트"
         subtitle="엔터나 버튼으로 추가"
         placeHolder="ex) 도배💖만들어줘💥"
-        bind:configList={$configStore.mujisung.custom}
+        bind:configList={$mujisungCustomStore}
         bind:showErrorModal
       />
 
@@ -210,14 +214,14 @@
         title="LIVE 자동 UP 대상"
         subtitle="엔터나 버튼으로 추가"
         placeHolder="줄바꿈으로 구분해 스트리머 ID 입력"
-        bind:configList={$configStore.autoUp.custom}
+        bind:configList={$autoUpStore}
       />
 
       <InputAndAdd
         title="LIVE 채팅 가리기"
         subtitle="엔터나 버튼으로 추가"
         placeHolder="차단할 유저 닉네임 입력"
-        bind:configList={$configStore.blockUser.list}
+        bind:configList={$blockUserStore}
       />
     </div>
   </div>

@@ -1,9 +1,10 @@
 <script lang="ts">
-  let { openSide }: { openSide: () => Promise<void> } = $props();
+  let { title, openSide }: { title: string; openSide?: () => Promise<void> } =
+    $props();
 </script>
 
 <header>
-  <h1 class="mt-3 mb-1 text-center text-2xl font-bold">INGDLC for SOOP</h1>
+  <h1 class="mt-3 mb-1 text-center text-2xl font-bold">{title}</h1>
 
   <div class="text-center text-xs text-slate-500">
     Ver.<span>{chrome.runtime.getManifest().version}</span>
